@@ -1,8 +1,13 @@
 <script lang="ts" setup>
-import { reactive, ref } from 'vue'
+import { reactive, ref,onMounted,onActivated,onBeforeUnmount} from 'vue'
 import type { FormInstance } from 'element-plus'
+import router from '../router/index';
 import api from '../axios/axios';
-
+//使用pinia，全局状态保存
+import {mainStore} from '../store/index';
+import {storeToRefs} from 'pinia';
+const store = mainStore()
+const {userInfo} = storeToRefs(store);
 //登录校验
 const ruleFormRef = ref<FormInstance>()
 const validateAccount = (rule: any, value: any, callback: any) => {
@@ -45,6 +50,9 @@ const submitForm = (formEl: FormInstance | undefined) => {
         api.post("/login?username="+loginUser.username+"&password="+loginUser.password)
         .then(res=>{
             console.log(res);
+            store.changeToken(res.data.token)
+            console.log("取出的token："+store.getToken)
+            router.push("/home")
         })
     } 
     else {
@@ -58,6 +66,7 @@ const resetForm = (formEl: FormInstance | undefined) => {
   if (!formEl) return
   formEl.resetFields()
 }
+
 </script>
 
 <template>

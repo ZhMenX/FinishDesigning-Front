@@ -1,14 +1,7 @@
 <script lang="ts" setup>
-import { ref } from 'vue'
-import { Delete, Edit, Search, Share, Upload,ArrowLeftBold,
-ArrowRightBold } from '@element-plus/icons-vue'
-import {
-    Document,
-    Menu as IconMenu,
-    Location,
-    Setting,
-} from '@element-plus/icons-vue'
-import { is } from '@babel/types';
+import { ref,inject,reactive } from 'vue'
+//引入界面刷新
+const reload: any = inject("reload");
 const activeIndex = ref('1')
 const handleSelect = (key: string, keyPath: string[]) => {
   console.log(key, keyPath)
@@ -45,13 +38,13 @@ const handleClose = (key: string, keyPath: string[]) => {
           <el-menu-item index="1" @click="OpenCollapse">展开</el-menu-item>
           <div class="flex-grow" />
           <el-menu-item index="2" @click="OpenCollapse">
-            <h1 style="text-align:center; color: #199e9e;">后台管理系统</h1>
+            <h1 style="text-align:center; color: #199e9e;">小程序后台管理</h1>
           </el-menu-item>
           <div class="flex-grow_right" />
-          <el-menu-item index="3">Processing Center</el-menu-item>
-          <el-sub-menu index="4">
-            <template #title>Workspace</template>
-              <el-menu-item index="4-1">item one</el-menu-item>
+          <el-menu-item  @click="reload()">欢迎， SuperAdmin !</el-menu-item>
+          <el-sub-menu >
+            <template #title>设置</template>
+              <el-menu-item index="4-1">退出登录</el-menu-item>
               <el-menu-item index="4-2">item two</el-menu-item>
               <el-menu-item index="4-3">item three</el-menu-item>
           </el-sub-menu>
@@ -82,12 +75,24 @@ const handleClose = (key: string, keyPath: string[]) => {
           <span>系统管理</span>
         </template>
         <el-menu-item-group>
-          <template #title><span>权限管理</span></template>
-          <el-menu-item index="1-1">用户管理</el-menu-item>
-          <el-menu-item index="1-2">角色管理</el-menu-item>
+          <template #title>
+            
+            <span>权限管理</span>
+          </template>
+          <el-menu-item index="/user">
+            <el-icon><User /></el-icon>
+            用户管理
+          </el-menu-item>
+          <el-menu-item index="/role">
+            <el-icon><Service /></el-icon>
+            角色管理
+          </el-menu-item>
         </el-menu-item-group>
         <el-menu-item-group title="账号管理">
-          <el-menu-item index="1-3">账号管理</el-menu-item>
+          <el-menu-item index="/authority">
+            <el-icon><Menu /></el-icon>
+            后台权限
+          </el-menu-item>
         </el-menu-item-group>
       </el-sub-menu>
       <el-sub-menu index="3">
@@ -142,7 +147,7 @@ const handleClose = (key: string, keyPath: string[]) => {
     min-height: 400px;
 }
 .flex-grow {
-  flex-grow: 0.70;
+  flex-grow: 0.50;
 }
 .flex-grow_right{
   flex-grow: 0.5;

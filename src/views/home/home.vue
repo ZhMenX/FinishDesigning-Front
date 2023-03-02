@@ -1,11 +1,14 @@
 <template>
-	<div class="home card">
-		<img class="home-bg" src="../../assets/welcome.png" alt="welcome" />
-	</div>
+	<span class="home">
+		<h1 style="margin-left:300px;margin-top:100px;color:#99f2f3">Welcome Admin!</h1>
+	</span>
 </template>
 
 <script setup lang="ts" name="home"></script>
 
-<style scoped lang="scss">
-@import "./index.scss";
+<style scoped>
+.home{
+	font-size: xx-large;
+	margin-left: 400px;
+}
 </style>

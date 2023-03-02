@@ -38,12 +38,7 @@ initAxios.interceptors.response.use(
 	function (response) {
 		console.log(response.data)
 		// 2xx 范围内的状态码都会触发该函数。
-		// 对响应数据做点什么
-		// dataAxios 是 axios 返回数据中的 data
-		const dataAxios = response.data
-		// 这个状态码是和后端约定的
-		const code = dataAxios.reset
-		return dataAxios
+		return response
 	},
 	function (error) {
 		// 超出 2xx 范围的状态码都会触发该函数。

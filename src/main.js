@@ -1,7 +1,8 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
-
+//pinia
+import {createPinia} from "pinia";
 import './assets/main.css'
 //Vant引入组件样式
 import 'vant/lib/index.css';
@@ -10,8 +11,11 @@ import 'element-plus/dist/index.css'
 import axios from 'axios'
 import VueAxios from 'vue-axios'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
-const app = createApp(App)
+
+const pinia = createPinia();
+const app = createApp(App);
 app.use(router)
+app.use(pinia)
 app.use(VueAxios, axios)
 app.use(ElementPlus)
 
