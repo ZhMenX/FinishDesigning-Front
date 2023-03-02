@@ -134,8 +134,8 @@ const handleClose = (key: string, keyPath: string[]) => {
   width: 1470px;
   margin-top: 50px;
   padding: 0;
-  height: auto;
-  background-image: url("https://img.zcool.cn/community/019ead5da989b5a801209e1f598699.jpg@1280w_1l_2o_100sh.jpg")
+  height: 670px;
+  background-image: url('../assets/background-image.jpg')
 }
 .el-menu-vertical-demo:not(.el-menu--collapse) {
     width: 200px;
