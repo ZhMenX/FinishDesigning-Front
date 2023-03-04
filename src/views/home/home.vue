@@ -4,7 +4,9 @@
 	</span>
 </template>
 
-<script setup lang="ts" name="home"></script>
+<script setup lang="ts" name="home">
+
+</script>
 
 <style scoped>
 .home{

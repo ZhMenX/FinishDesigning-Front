@@ -51,9 +51,15 @@ const submitForm = (formEl: FormInstance | undefined) => {
         .then(res=>{
             console.log(res);
             store.changeToken(res.data.token)
+            store.changeUserId(res.data.data.id)
+            store.changeUser(res.data.data)
+            store.changeUserName(res.data.data.username)
             console.log("取出的token："+store.getToken)
+            console.log("取出的用户："+JSON.stringify(store.getUser))
+            console.log("取出的用户名："+store.getUserName)
+            console.log("取出的用户ID："+store.getUserId)
             router.push("/home")
-        })
+        })  
     } 
     else {
       console.log('error submit!')
