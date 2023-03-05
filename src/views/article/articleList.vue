@@ -1,10 +1,14 @@
 <script lang="ts" setup>
-import { onMounted, ref ,reactive,inject,getCurrentInstance} from 'vue';
-import api from '../../axios/axios';
 import { ElMessage, ElMessageBox } from "element-plus";
 import type { FormInstance, FormRules } from 'element-plus'
 import {mainStore} from '../../store/index';
 import {storeToRefs} from 'pinia';
+import { UploadFilled } from '@element-plus/icons-vue'
+//富文本编辑器
+import '@wangeditor/editor/dist/css/style.css' // 引入 css
+import api from '../../axios/axios';
+import { onBeforeUnmount, ref, shallowRef,inject, onMounted ,reactive} from 'vue'
+import { Editor, Toolbar } from '@wangeditor/editor-for-vue'
 const store = mainStore()
 //引入界面刷新
 const reload: any = inject("reload");
@@ -77,7 +81,18 @@ const resetForm = (formEl: FormInstance | undefined) => {
   if (!formEl) return
   formEl.resetFields()
 }
-
+//上传文件编辑框
+var dialogVisibleImage = ref(false);
+const uploadFirstImageUrl = ref('')
+//封面上传参数
+const uploadFirstImage = reactive({
+    title:''
+})
+const openImage =(row: any) => {
+  uploadFirstImage.title = row.title
+  uploadFirstImageUrl.value = 'http://localhost:8090/upload?title='+uploadFirstImage.title
+  dialogVisibleImage.value = true;
+};
 //编辑框
 var dialogVisibleUpdate = ref(false);
 //编辑处理
@@ -137,7 +152,7 @@ const onAdd = (row: any)  => {
     content: formAdd.content,
     createUserId:store.getUserId,
   };
-  api.post("/article/AddArticle", JSON.stringify(article)).then((res: any) => {
+  api.post("article/AddArticle", JSON.stringify(article)).then((res: any) => {
     articleList.list = res.data;
     dialogVisibleAdd.value = false;
     reload();
@@ -161,7 +176,7 @@ const handleClose = (done: () => void) => {
 //删除用户
 const onDelete =(row:any)=>{
 
-  api.get("User/DeleteUserById?id="+row.id).then((res:any) =>{
+  api.get("article/DelArticle?id="+row.articleId).then((res:any) =>{
     console.log(res.data)
     reload();
     ElMessage({
@@ -224,9 +239,100 @@ const resetFormLine = () => {
   formInline.description = '',
   formInline.classify_list = '',
   formInline.tag_list = '',
-  formInline.articleId=''
+  formInline.articleId='',
+  onSubmit();
 }
 
+// 编辑器实例，必须用 shallowRef
+const editorRef = shallowRef()
+
+// 内容 HTML
+const valueHtml = ref('<p>hello</p>')
+
+// 模拟 ajax 异步获取内容
+onMounted(() => {
+    setTimeout(() => {
+      valueHtml.value = '<p>模拟 Ajax 异步设置内容</p>'
+    }, 1500)
+})
+
+const toolbarConfig = {}
+// 初始化 MENU_CONF 属性
+const editorConfig = { 
+  MENU_CONF:{},
+  placeholder: '请输入内容...' 
+
+}
+
+editorConfig.MENU_CONF['uploadImage'] = {
+    //后端接口
+    server:'http://localhost:8090/upload',
+    // form-data fieldName ，默认值 'wangeditor-uploaded-image'
+    fieldName: 'file',
+
+    // 单个文件的最大体积限制，默认为 2M
+    maxFileSize: 10 * 1024 * 1024, // 1M
+
+    // 最多可上传几个文件，默认为 100
+    maxNumberOfFiles: 100,
+
+    // 选择文件时的类型限制，默认为 ['image/*'] 。如不想限制，则设置为 []
+    allowedFileTypes: [],
+
+    // 自定义上传参数，例如传递验证的 token 等。参数会被添加到 formData 中，一起上传到服务端。
+    meta: {
+        title: 'Eita Electronic Corporation',
+    },
+
+    // 将 meta 拼接到 url 参数中，默认 false
+    metaWithUrl: true,
+
+    // 自定义增加 http  header
+    /*headers: {
+        Accept: 'text/x-json',
+        otherKey: 'xxx'
+    },*/
+
+    // 跨域是否传递 cookie ，默认为 false
+    withCredentials: true,
+
+    // 超时时间，默认为 10 秒
+    timeout: 5 * 1000, // 5 秒
+    
+    onBeforeUpload(file) {
+        console.log('onBeforeUpload', file)
+
+        return file // will upload this file
+        // return false // prevent upload
+      },
+      onProgress(progress) {
+        console.log('onProgress', progress)
+      },
+      onSuccess(file, res) {
+        console.log('onSuccess', file, res)
+      },
+      onFailed(file, res) {
+        alert(res.message)
+        console.log('onFailed', file, res)
+      },
+      onError(file, err, res) {
+        alert(err.message)
+        console.error('onError', file, err, res)
+      },
+}
+
+// 组件销毁时，也及时销毁编辑器
+onBeforeUnmount(() => {
+    const editor = editorRef.value
+    if (editor == null) return
+    editor.destroy()
+})
+
+const handleCreated = (editor) => {
+  editorRef.value = editor // 记录 editor 实例，重要！
+}
+//上传封面
+var dialogVisible = ref(false);
 
 </script>
 
@@ -258,10 +364,12 @@ const resetFormLine = () => {
         :header-cell-style="headerStyle"
         :row-style="rowStyle"
     >
-      <el-table-column prop="title" label="标题" width="500" />
-      <el-table-column prop="description" label="描述" width="500" />
-        <el-table-column label="操作">
+        <el-table-column prop="articleId" label="文章序号" sortable  />
+        <el-table-column prop="title" label="标题"/>
+        <el-table-column prop="description" label="描述"  />  
+        <el-table-column label=""  >
           <template #default="scope">
+            <el-button type="primary" text @click="openImage(scope.row)" style="color:aqua">上传封面图</el-button>
             <el-button type="primary" text @click="openUpdate(scope.row)" style="color:aqua">编辑</el-button>
             <el-button type="danger" text @click="onDelete(scope.row)">删除</el-button>
           </template>     
@@ -280,9 +388,41 @@ const resetFormLine = () => {
     </div>
   </el-card>
   <el-dialog
+    v-model="dialogVisibleImage"
+    title="封面上传"
+    width="50%"
+    height="auto"
+    :before-close="handleClose"
+  >
+  <el-upload
+    class="upload-demo"
+    drag
+    :action="uploadFirstImageUrl"
+    multiple
+  >
+    <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+    <div class="el-upload__text">
+      Drop file here or <em>click to upload</em>
+    </div>
+    <template #tip>
+      <div class="el-upload__tip">
+        jpg/png files with a size less than 500kb
+      </div>
+    </template>
+  </el-upload>   
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="dialogVisibleImage = false">Cancel</el-button>
+        <el-button type="primary" @click="dialogVisibleImage = false">
+          上传封面
+        </el-button>
+      </span>
+    </template>
+  </el-dialog>
+  <el-dialog
         v-model="dialogVisibleAdd"
-        title="新增用户"
-        width="500px"
+        title="新增文章"
+        width="auto"
         :before-close="handleClose"
       >
         <el-form 
@@ -293,13 +433,25 @@ const resetFormLine = () => {
         :rules="rules"
         >
           <el-form-item label="标题：">
-            <el-input v-model="formAdd.title" type="text" autocomplete="off"  placeholder="请输入标题" />
+            <el-input v-model="formAdd.title" type="text" autocomplete="off"  placeholder="请输入标题" style="width:500px;" />
           </el-form-item>
           <el-form-item label="描述：">
-            <el-input v-model="formAdd.description" type="text" autocomplete="off"  placeholder="请输入描述" />
+            <textarea v-model="formAdd.description" type="text" autocomplete="off"  placeholder="请输入描述"  style="width:1300px"/>
           </el-form-item>
           <el-form-item label="内容：">
-            <el-input v-model="formAdd.content" type="password" autocomplete="off" placeholder="请输入内容" />
+            <Toolbar
+              style="border-bottom: 1px solid #ccc"
+              :editor="editorRef"
+              :defaultConfig="toolbarConfig"
+              mode="default"
+            />
+            <Editor
+              style="height: 350px; overflow-y: hidden; width:1370px"
+              v-model="formAdd.content"
+              :defaultConfig="editorConfig"
+              mode="default"
+              @onCreated="handleCreated"
+            />
           </el-form-item>
         </el-form>
         <template #footer>
@@ -312,7 +464,7 @@ const resetFormLine = () => {
   <el-dialog
         v-model="dialogVisibleUpdate"
         title="编辑用户"
-        width="500px"
+        width="auto"
         :before-close="handleClose"
       >
         <el-form 
@@ -323,13 +475,25 @@ const resetFormLine = () => {
         :rules="rules"
         >
           <el-form-item label="标题：">
-            <el-input v-model="formUpdate.title" type="text" autocomplete="off"  placeholder="请输入标题" />
+            <el-input v-model="formUpdate.title" type="text" autocomplete="off"  placeholder="请输入标题" style="width:500px" />
           </el-form-item>
           <el-form-item label="描述：">
-            <el-input v-model="formUpdate.description" type="text" autocomplete="off" placeholder="请输入描述" />
+            <textarea v-model="formUpdate.description" type="text" autocomplete="off"  placeholder="请输入描述"  style="width:1300px"/>
           </el-form-item>
           <el-form-item label="内容：">
-            <el-input v-model="formUpdate.content" type="text" autocomplete="off" placeholder="请输入内容" />
+            <Toolbar
+              style="border-bottom: 1px solid #ccc"
+              :editor="editorRef"
+              :defaultConfig="toolbarConfig"
+              mode="default"
+            />
+            <Editor
+              style="height: 350px; overflow-y: hidden; width:1370px"
+              v-model="formUpdate.content"
+              :defaultConfig="editorConfig"
+              mode="default"
+              @onCreated="handleCreated"
+            />
           </el-form-item>
         </el-form>
         <template #footer>

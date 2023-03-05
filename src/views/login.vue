@@ -59,6 +59,8 @@ const submitForm = (formEl: FormInstance | undefined) => {
             console.log("取出的用户名："+store.getUserName)
             console.log("取出的用户ID："+store.getUserId)
             router.push("/home")
+            //测试
+            //router.push("/test")
         })  
     } 
     else {

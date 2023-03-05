@@ -12,6 +12,7 @@ import axios from 'axios'
 import VueAxios from 'vue-axios'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 
+
 const pinia = createPinia();
 const app = createApp(App);
 app.use(router)
