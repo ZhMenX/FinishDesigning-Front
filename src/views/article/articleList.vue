@@ -3,10 +3,12 @@ import { ElMessage, ElMessageBox } from "element-plus";
 import type { FormInstance, FormRules } from 'element-plus'
 import {mainStore} from '../../store/index';
 import {storeToRefs} from 'pinia';
+import axios from 'axios'
 import { UploadFilled } from '@element-plus/icons-vue'
 //富文本编辑器
 import '@wangeditor/editor/dist/css/style.css' // 引入 css
 import api from '../../axios/axios';
+import { SlateElement } from '@wangeditor/editor'
 import { onBeforeUnmount, ref, shallowRef,inject, onMounted ,reactive} from 'vue'
 import { Editor, Toolbar } from '@wangeditor/editor-for-vue'
 const store = mainStore()
@@ -120,7 +122,32 @@ const onUpdate = (row: any)  => {
     content:formUpdate.content,
     createUserId:store.getUserId,
   };
-  api.post("article/UpdArticle", JSON.stringify(userUpdate)).then((res: any) => {
+  axios.request({
+    baseURL:"http://localhost:8090/",
+    url:"article/UpdArticle",
+    data:{
+      articleId :formUpdate.articleId,
+      title: formUpdate.title,
+      description: formUpdate.description,
+      content:formUpdate.content,
+      createUserId:store.getUserId,
+    },
+    method:'post',
+    headers:{'Content-Type': 'application/json','X-Requested-With': 'XMLHttpRequest'}
+  })
+  .then((res: any) => {
+    articleList.list = res.data;
+    ElMessage({
+        showClose: true,
+        message: '保存成功！',
+        type: 'success',
+    })
+  });
+  dialogVisibleUpdate.value = false;
+  reload();
+
+  /*api.post("article/UpdArticle", JSON.stringify(userUpdate))
+  .then((res: any) => {
     articleList.list = res.data;
   });
   dialogVisibleUpdate.value = false;
@@ -129,7 +156,7 @@ const onUpdate = (row: any)  => {
         showClose: true,
         message: '保存成功！',
         type: 'success',
-    })
+  })*/
 };
 //新增框
 var dialogVisibleAdd = ref(false);
@@ -152,7 +179,20 @@ const onAdd = (row: any)  => {
     content: formAdd.content,
     createUserId:store.getUserId,
   };
-  api.post("article/AddArticle", JSON.stringify(article)).then((res: any) => {
+  axios.request({
+    baseURL:"http://localhost:8090/",
+    url:"article/AddArticle",
+    data:{
+      articleId :formAdd.articleId,
+      title: formAdd.title,
+      description: formAdd.description,
+      content: formAdd.content,
+      createUserId:store.getUserId,
+    },
+    method:'post',
+    headers:{'Content-Type': 'application/json','X-Requested-With': 'XMLHttpRequest'}
+  })
+  .then((res: any) => {
     articleList.list = res.data;
     dialogVisibleAdd.value = false;
     reload();
@@ -162,6 +202,17 @@ const onAdd = (row: any)  => {
         type: 'success',
     })
   });
+  /*api.post("article/AddArticle", JSON.stringify(article))
+  .then((res: any) => {
+    articleList.list = res.data;
+    dialogVisibleAdd.value = false;
+    reload();
+    ElMessage({
+        showClose: true,
+        message: '新增成功！',
+        type: 'success',
+    })
+  });*/
 };
 //关闭弹出框
 const handleClose = (done: () => void) => {
@@ -263,62 +314,49 @@ const editorConfig = {
   placeholder: '请输入内容...' 
 
 }
-
+//自定义上传图片
+const UploadFile = (file,insertFn)=>{
+  let imgData = new FormData();
+  imgData.append("file", file);
+  //调用上传图片接口，上传图片
+  api.post("uploadArticleImage",imgData)
+  .then(res=>{
+      console.log(res);
+      console.log(res.data.data[0]);
+      // 插入后端返回的url
+      insertFn(res.data.data[0]); //res.data.data是url地址
+      ElMessage({
+        type: "success",
+        message: "上传成功"
+      })
+  })
+  .catch((error) => {
+      ElMessage({
+        message:"上传失败！",
+        type:"error"
+      })
+  });
+  /*api.post("uploadArticleImage", imgData) //该上传图片接口，返回url
+  .then((res) => {
+      console.log(res);
+      console.log(res.data.data[0]);
+      // 插入后端返回的url
+      insertFn(res.data.data[0]); //res.data.data是url地址
+      ElMessage({
+        type: "success",
+        message: "上传成功"
+      })
+  })
+  .catch((error) => {
+      ElMessage({
+        message:"上传失败！",
+        type:"error"
+      })
+  });*/
+}
 editorConfig.MENU_CONF['uploadImage'] = {
-    //后端接口
-    server:'http://localhost:8090/upload',
-    // form-data fieldName ，默认值 'wangeditor-uploaded-image'
-    fieldName: 'file',
-
-    // 单个文件的最大体积限制，默认为 2M
-    maxFileSize: 10 * 1024 * 1024, // 1M
-
-    // 最多可上传几个文件，默认为 100
-    maxNumberOfFiles: 100,
-
-    // 选择文件时的类型限制，默认为 ['image/*'] 。如不想限制，则设置为 []
-    allowedFileTypes: [],
-
-    // 自定义上传参数，例如传递验证的 token 等。参数会被添加到 formData 中，一起上传到服务端。
-    meta: {
-        title: 'Eita Electronic Corporation',
-    },
-
-    // 将 meta 拼接到 url 参数中，默认 false
-    metaWithUrl: true,
-
-    // 自定义增加 http  header
-    /*headers: {
-        Accept: 'text/x-json',
-        otherKey: 'xxx'
-    },*/
-
-    // 跨域是否传递 cookie ，默认为 false
-    withCredentials: true,
-
-    // 超时时间，默认为 10 秒
-    timeout: 5 * 1000, // 5 秒
-    
-    onBeforeUpload(file) {
-        console.log('onBeforeUpload', file)
-
-        return file // will upload this file
-        // return false // prevent upload
-      },
-      onProgress(progress) {
-        console.log('onProgress', progress)
-      },
-      onSuccess(file, res) {
-        console.log('onSuccess', file, res)
-      },
-      onFailed(file, res) {
-        alert(res.message)
-        console.log('onFailed', file, res)
-      },
-      onError(file, err, res) {
-        alert(err.message)
-        console.error('onError', file, err, res)
-      },
+    customUpload:UploadFile,
+    fieldName: 'files',
 }
 
 // 组件销毁时，也及时销毁编辑器

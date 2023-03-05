@@ -3,7 +3,7 @@ import { onMounted, ref ,reactive,inject,getCurrentInstance} from 'vue';
 import api from '../../axios/axios';
 import { ElMessageBox } from "element-plus";
 import { FormInstance, FormRules,ElMessage} from 'element-plus'
-
+import axios from 'axios'
 //引入界面刷新
 const reload: any = inject("reload");
 let roleList = reactive({
@@ -75,7 +75,17 @@ const onUpdate = (row: any)  => {
     id:formUpdate.id,
     name: formUpdate.name,
   };
-  api.post("role/UpdateRole", JSON.stringify(userUpdate)).then((res: any) => {
+  axios.request({
+    baseURL:"http://localhost:8090/",
+    url:"role/UpdateRole",
+    data:{
+      id:formUpdate.id,
+      name: formUpdate.name,
+    },
+    method:'post',
+    headers:{'Content-Type': 'application/json','X-Requested-With': 'XMLHttpRequest'}
+  })
+  .then((res: any) => {
     roleList.list = res.data;
   });
   dialogVisibleUpdate.value = false;
@@ -84,7 +94,18 @@ const onUpdate = (row: any)  => {
         showClose: true,
         message: '保存成功！',
         type: 'success',
-    })
+  })
+  /*api.post("role/UpdateRole", JSON.stringify(userUpdate))
+  .then((res: any) => {
+    roleList.list = res.data;
+  });
+  dialogVisibleUpdate.value = false;
+  reload();
+  ElMessage({
+        showClose: true,
+        message: '保存成功！',
+        type: 'success',
+  })*/
 };
 //新增框
 var dialogVisibleAdd = ref(false);
@@ -100,7 +121,17 @@ const onAdd = (row: any)  => {
     id:0,
     name: formAdd.name,
   }
-  api.post("role/InsertRole", JSON.stringify(role)).then((res: any) => {
+  axios.request({
+    baseURL:"http://localhost:8090/",
+    url:"role/InsertRole",
+    data:{
+      id:0,
+      name:formAdd.name
+    },
+    method:'post',
+    headers:{'Content-Type': 'application/json','X-Requested-With': 'XMLHttpRequest'}
+  })
+  .then((res: any) => {
     roleList.list = res.data;
     dialogVisibleAdd.value = false;
     reload();
@@ -110,6 +141,17 @@ const onAdd = (row: any)  => {
         type: 'success',
     })
   });
+  /*api.post("role/InsertRole", JSON.stringify(role))
+  .then((res: any) => {
+    roleList.list = res.data;
+    dialogVisibleAdd.value = false;
+    reload();
+    ElMessage({
+        showClose: true,
+        message: '新增成功！',
+        type: 'success',
+    })
+  });*/
 };
 //关闭弹出框
 const handleClose = (done: () => void) => {

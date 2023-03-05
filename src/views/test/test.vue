@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import '@wangeditor/editor/dist/css/style.css' // 引入 css
 import api from '../../axios/axios';
+import { ElMessage, ElMessageBox } from "element-plus";
 import { onBeforeUnmount, ref, shallowRef, onMounted ,reactive} from 'vue'
 import { Editor, Toolbar } from '@wangeditor/editor-for-vue'
 // 编辑器实例，必须用 shallowRef
@@ -15,9 +16,40 @@ onMounted(() => {
       valueHtml.value = '<p>模拟 Ajax 异步设置内容</p>'
     }, 1500)
 })
+const UploadFile = (file,insertFn)=>{
+  let imgData = new FormData();
+  imgData.append("file", file);
+  //调用上传图片接口，上传图片
+  api.post("uploadArticleImage", imgData) //该上传图片接口，返回url
+  .then((res) => {
+      console.log(res);
+      console.log(res.data.data[0]);
+      // 插入后端返回的url
+      insertFn(res.data.data[0]); //res.data.data是url地址
+      ElMessage({
+        type: "success",
+        message: "上传成功"
+      })
+  })
+  .catch((error) => {
+      ElMessage({
+        message:"上传失败！",
+        type:"error"
+      })
+  });
+}
 
 const toolbarConfig = {}
-const editorConfig = { placeholder: '请输入内容...' }
+const editorConfig = { 
+  placeholder: '请输入内容...',
+  MENU_CONF:{
+    uploadImage:{
+      customUpload:UploadFile,
+      fieldName: "files",
+    }
+  }
+}
+
 
 // 组件销毁时，也及时销毁编辑器
 onBeforeUnmount(() => {
@@ -73,18 +105,6 @@ const onSelect = (row: any)  => {
         @onCreated="handleCreated"
       />
       <div style="margin-top: 10px">
-      <textarea
-        v-model="Data.content"
-        readonly
-        style="width: 100%; height: 200px; outline: none"
-      ></textarea>
-      <Editor
-        style="height: 500px; overflow-y: hidden;"
-        v-model="Data.content"
-        :defaultConfig="editorConfig"
-        mode="default"
-        @onCreated="handleCreated"
-      />
     </div>
       <el-button @click="onAdd">新增</el-button>
       <el-button @click="onSelect">回显</el-button>

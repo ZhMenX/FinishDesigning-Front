@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 import { onMounted, ref ,reactive,inject,getCurrentInstance} from 'vue';
 import api from '../../axios/axios';
+import axios from 'axios'
 import { ElMessage, ElMessageBox } from "element-plus";
 import type { FormInstance, FormRules } from 'element-plus'
-
 //引入界面刷新
 const reload: any = inject("reload");
 let userList = reactive({
@@ -87,9 +87,15 @@ const formUpdate = reactive({
   username: "",
   age: 0,
   name: "",
-
   sex: 0,
 });
+const requestUpdate = reactive({
+  username :formUpdate.username,
+  age: formUpdate.age,
+  name: formUpdate.name,
+  password:'123456',
+  sex: formUpdate.sex,
+})
 const openUpdate =(row: any) => {
   formUpdate.username=row.username,
   formUpdate.age=row.age,
@@ -105,9 +111,22 @@ const onUpdate = (row: any)  => {
     password:'123456',
     sex: formUpdate.sex,
   };
-  api.post("User/UpdateUser", JSON.stringify(userUpdate)).then((res: any) => {
+  requestUpdate.username = formUpdate.username;
+  requestUpdate.age = formUpdate.age;
+  requestUpdate.name = formUpdate.name;
+  requestUpdate.sex = formUpdate.sex;
+  axios.request({
+    baseURL:"http://localhost:8090/",
+    url:"User/UpdateUser",
+    data:requestUpdate,
+    method:'post',
+    headers:{'Content-Type': 'application/json','X-Requested-With': 'XMLHttpRequest'}
+  }).then((res: any) => {
     userList.list = res.data;
   });
+  /*api.post("User/UpdateUser", {params:JSON.stringify(userUpdate),headers:"application/json"}).then((res: any) => {
+    userList.list = res.data;
+  });*/
   dialogVisibleUpdate.value = false;
   reload();
   ElMessage({
@@ -127,6 +146,13 @@ const formAdd = reactive({
   checkPassword:'',
   sex: 0,
 });
+const requestAdd = reactive({
+    username :formAdd.username,
+    age: formAdd.age,
+    name: formAdd.name,
+    password: formAdd.password,
+    sex: formAdd.sex,
+})
 const openAdd =() => {
   dialogVisibleAdd.value = true;
 };
@@ -138,7 +164,19 @@ const onAdd = (row: any)  => {
     password: formAdd.password,
     sex: formAdd.sex,
   };
-  api.post("register", JSON.stringify(user)).then((res: any) => {
+  requestAdd.username = formAdd.username;
+  requestAdd.age = formAdd.age;
+  requestAdd.name = formAdd.name;
+  requestAdd.sex = formAdd.sex;
+  requestAdd.password = formAdd.password;
+  axios.request({
+    baseURL:"http://localhost:8090/",
+    url:"register",
+    data:requestAdd,
+    method:'post',
+    headers:{'Content-Type': 'application/json','X-Requested-With': 'XMLHttpRequest'}
+  })
+  .then((res: any) => {
     userList.list = res.data;
     dialogVisibleAdd.value = false;
     reload();
@@ -148,6 +186,17 @@ const onAdd = (row: any)  => {
         type: 'success',
     })
   });
+  /*api.post("register",JSON.stringify(user))
+  .then((res: any) => {
+    userList.list = res.data;
+    dialogVisibleAdd.value = false;
+    reload();
+    ElMessage({
+        showClose: true,
+        message: '新增成功！',
+        type: 'success',
+    })
+  });*/
 };
 //关闭弹出框
 const handleClose = (done: () => void) => {

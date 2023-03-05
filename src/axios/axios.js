@@ -8,7 +8,7 @@ const initAxios = axios.create({
 	withCredentials: true, // 异步请求携带cookie
 	headers: {
 		// 设置后端需要的传参类型
-		'Content-Type': 'application/json',
+		//'Content-Type': 'application/json',
 		//'token': 'your token',
 		'X-Requested-With': 'XMLHttpRequest',
 		'Access-Control-Allow-Origin':'*',
