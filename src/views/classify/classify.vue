@@ -6,12 +6,12 @@ import { FormInstance, FormRules, ElMessage } from "element-plus";
 import axios from "axios";
 //引入界面刷新
 const reload: any = inject("reload");
-let roleList = reactive({
+let tagsList = reactive({
   list: [],
 });
 //分页
 const page = reactive({
-  pageSize: 7,
+  pageSize: 10,
   currentSize: 1,
   total: 0,
 });
@@ -24,12 +24,12 @@ const handleCurrentChange = (val: number) => {
   FindUserListByPage(page.currentSize, page.pageSize);
   console.log(`current page: ${val}`);
 };
-//获取角色列表方法
+//获取领域列表方法
 const FindUserListByPage = (currentSize: number, pageSize: number) => {
   api
-    .get("role/FindRoleList?index=" + currentSize + "&size=" + pageSize)
+    .get("Classify/FindClassifyList?index=" + currentSize + "&size=" + pageSize)
     .then((res: any) => {
-      roleList.list = res.data.data.records;
+      tagsList.list = res.data.data.records;
       page.total = res.data.data.total;
       page.currentSize = res.data.data.current;
       page.pageSize = res.data.data.size;
@@ -45,9 +45,9 @@ onMounted(() => {
 const ruleFormRef = ref<FormInstance>();
 const validateAccount = (rule: any, value: any, callback: any) => {
   if (value === "") {
-    callback(new Error("请输入用户名"));
+    callback(new Error("请输入领域名"));
   } else {
-    if (formAdd.name !== "") {
+    if (formAdd.classifyName !== "") {
       if (!ruleFormRef.value) return;
       ruleFormRef.value.validateField("checkPass", () => null);
     }
@@ -63,22 +63,25 @@ const rules = reactive({
 var dialogVisibleUpdate = ref(false);
 //编辑处理
 const formUpdate = reactive({
-  id: 0,
-  name: "",
+  id: "",
+  classifyName: "",
+  classifyDescription: "",
 });
 const openUpdate = (row: any) => {
-  (formUpdate.id = row.id),
-    (formUpdate.name = row.name),
+  (formUpdate.classifyName = row.classifyName),
+    (formUpdate.classifyDescription = row.classifyDescription),
+    (formUpdate.id = row.id),
     (dialogVisibleUpdate.value = true);
 };
 const onUpdate = (row: any) => {
   axios
     .request({
       baseURL: "http://localhost:8090/",
-      url: "role/UpdateRole",
+      url: "Classify/UpdateClassify",
       data: {
         id: formUpdate.id,
-        name: formUpdate.name,
+        classifyName: formUpdate.classifyName,
+        classifyDescription: formUpdate.classifyDescription,
       },
       method: "post",
       headers: {
@@ -87,7 +90,7 @@ const onUpdate = (row: any) => {
       },
     })
     .then((res: any) => {
-      roleList.list = res.data;
+      tagsList.list = res.data;
     });
   dialogVisibleUpdate.value = false;
   reload();
@@ -96,12 +99,24 @@ const onUpdate = (row: any) => {
     message: "保存成功！",
     type: "success",
   });
+  /*api.post("role/UpdateRole", JSON.stringify(userUpdate))
+  .then((res: any) => {
+    roleList.list = res.data;
+  });
+  dialogVisibleUpdate.value = false;
+  reload();
+  ElMessage({
+        showClose: true,
+        message: '保存成功！',
+        type: 'success',
+  })*/
 };
 //新增框
 var dialogVisibleAdd = ref(false);
 //新增处理
 const formAdd = reactive({
-  name: "",
+  classifyName: "",
+  classifyDescription: "",
 });
 const openAdd = () => {
   dialogVisibleAdd.value = true;
@@ -110,10 +125,11 @@ const onAdd = (row: any) => {
   axios
     .request({
       baseURL: "http://localhost:8090/",
-      url: "role/InsertRole",
+      url: "Classify/InsertClassify",
       data: {
         id: 0,
-        name: formAdd.name,
+        classifyName: formAdd.classifyName,
+        classifyDescription: formAdd.classifyDescription,
       },
       method: "post",
       headers: {
@@ -122,7 +138,7 @@ const onAdd = (row: any) => {
       },
     })
     .then((res: any) => {
-      roleList.list = res.data;
+      tagsList.list = res.data;
       dialogVisibleAdd.value = false;
       reload();
       ElMessage({
@@ -144,7 +160,7 @@ const handleClose = (done: () => void) => {
 };
 //删除角色
 const onDelete = (row: any) => {
-  api.get("role/DeleteRole?id=" + row.id).then((res: any) => {
+  api.get("Classify/DeleteClassify?id=" + row.id).then((res: any) => {
     console.log(res.data);
     reload();
     ElMessage({
@@ -173,24 +189,25 @@ const rowStyle = (arg) => {
 };
 //模糊查询
 const formInline = reactive({
-  name: "",
-  username: "",
+  classifyName: "",
+  classifyDescription: "",
   currentIndex: page.currentSize,
   pageSize: page.pageSize,
 });
 //筛选方法
 const onSubmit = () => {
-  api.post("role/FindRoleListByOthers", formInline).then((res: any) => {
-    roleList.list = res.data.records;
-    page.total = res.data.total;
-    page.currentSize = res.data.current;
-    page.pageSize = res.data.size;
+  api.post("Classify/FindClassifyListByOthers", formInline).then((res: any) => {
+    tagsList.list = res.data.data.records;
+    page.total = res.data.data.total;
+    page.currentSize = res.data.data.current;
+    page.pageSize = res.data.data.size;
     console.log(res.data);
   });
 };
 //重置筛选表单
 const resetFormLine = () => {
-  formInline.name = "";
+  (formInline.classifyDescription = ""),
+    FindUserListByPage(page.currentSize, page.pageSize);
 };
 </script>
 
@@ -198,8 +215,11 @@ const resetFormLine = () => {
   <el-card style="background-color: #153a40; margin-bottom: 5px">
     <div>
       <el-form :inline="true" :model="formInline" class="demo-form-inline">
-        <el-form-item label="角色名：">
-          <el-input v-model="formInline.name" placeholder="请输入昵称" />
+        <el-form-item label="关键字：">
+          <el-input
+            v-model="formInline.classifyDescription"
+            placeholder="请输入关键字"
+          />
         </el-form-item>
         <el-form-item>
           <el-button
@@ -224,7 +244,7 @@ const resetFormLine = () => {
             text
             @click="openAdd()"
             style="color: aqua"
-            >新增角色</el-button
+            >新增标签</el-button
           >
         </el-form-item>
       </el-form>
@@ -233,13 +253,14 @@ const resetFormLine = () => {
 
   <el-card style="background-color: #153a40">
     <el-table
-      :data="roleList.list"
+      :data="tagsList.list"
       style="width: 100%"
       :header-cell-style="headerStyle"
       :row-style="rowStyle"
     >
       <el-table-column prop="id" label="序号" />
-      <el-table-column prop="name" label="角色名字" />
+      <el-table-column prop="classifyName" label="领域名" />
+      <el-table-column prop="classifyDescription" label="领域描述" />
       <el-table-column label="操作">
         <template #default="scope">
           <el-button
@@ -269,7 +290,7 @@ const resetFormLine = () => {
   </el-card>
   <el-dialog
     v-model="dialogVisibleAdd"
-    title="新增角色"
+    title="新增领域"
     width="500px"
     :before-close="handleClose"
   >
@@ -280,12 +301,20 @@ const resetFormLine = () => {
       :model="formAdd"
       :rules="rules"
     >
-      <el-form-item label="角色名称：">
+      <el-form-item label="领域名称：">
         <el-input
-          v-model="formAdd.name"
+          v-model="formAdd.classifyName"
           type="text"
           autocomplete="off"
-          placeholder="请输入角色名称"
+          placeholder="请输入领域名称"
+        />
+      </el-form-item>
+      <el-form-item label="领域描述：">
+        <el-input
+          v-model="formAdd.classifyDescription"
+          type="text"
+          autocomplete="off"
+          placeholder="请输入领域描述"
         />
       </el-form-item>
     </el-form>
@@ -298,7 +327,7 @@ const resetFormLine = () => {
   </el-dialog>
   <el-dialog
     v-model="dialogVisibleUpdate"
-    title="编辑角色"
+    title="编辑领域"
     width="500px"
     :before-close="handleClose"
   >
@@ -309,12 +338,20 @@ const resetFormLine = () => {
       :model="formUpdate"
       :rules="rules"
     >
-      <el-form-item label="角色名称：">
+      <el-form-item label="领域名称：">
         <el-input
-          v-model="formUpdate.name"
+          v-model="formUpdate.classifyName"
           type="text"
           autocomplete="off"
-          placeholder="请输入角色名称"
+          placeholder="请输入领域名称"
+        />
+      </el-form-item>
+      <el-form-item label="领域描述：">
+        <el-input
+          v-model="formUpdate.classifyDescription"
+          type="text"
+          autocomplete="off"
+          placeholder="请输入领域描述"
         />
       </el-form-item>
     </el-form>

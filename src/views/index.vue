@@ -108,21 +108,22 @@ const handleClose = (key: string, keyPath: string[]) => {
         </template>
         <el-menu-item-group>
           <template #title><span>话题</span></template>
-          <el-menu-item index="3-1">话题发布审核</el-menu-item>
-          <el-menu-item index="3-2">话题列表</el-menu-item>
-          <el-menu-item index="3-3">话题分类和标签</el-menu-item>
+          <el-menu-item index="/authority">话题发布审核</el-menu-item>
+          <el-menu-item index="/authority">话题列表</el-menu-item>
+          <el-menu-item index="/authority">话题分类和标签</el-menu-item>
         </el-menu-item-group>
         <el-menu-item-group title="文章博客">
-          <el-menu-item index="3-3">文章发布审核</el-menu-item>
+          <el-menu-item index="/authority">文章发布审核</el-menu-item>
           <el-menu-item index="/article">文章列表</el-menu-item>
-          <el-menu-item index="3-3">文章分类和标签</el-menu-item>
+          <el-menu-item index="/tags">文章标签</el-menu-item>
+          <el-menu-item index="/classify">文章领域分类</el-menu-item>
         </el-menu-item-group>
         <!--<el-sub-menu index="3-4">
           <template #title><span>item four</span></template>
           <el-menu-item index="3-4-1">item one</el-menu-item>
         </el-sub-menu>-->
       </el-sub-menu>
-      <el-menu-item index="4">
+      <el-menu-item index="/authority">
         <el-icon><setting /></el-icon>
         <template #title>GitHub</template>
       </el-menu-item>

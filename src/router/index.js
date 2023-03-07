@@ -40,6 +40,16 @@ const router = createRouter({
           component: () => import('../views/authority/authorityList.vue')
         },
         {
+          path: '/classify',
+          name: 'classify',
+          component: () => import('../views/classify/classify.vue')
+        },
+        {
+          path: '/tags',
+          name: 'tags',
+          component: () => import('../views/tags/tags.vue')
+        },
+        {
           path: '/home',
           name: 'home',
           component: () => import('../views/home/home.vue')

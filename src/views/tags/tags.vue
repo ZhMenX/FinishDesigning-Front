@@ -6,12 +6,12 @@ import { FormInstance, FormRules, ElMessage } from "element-plus";
 import axios from "axios";
 //引入界面刷新
 const reload: any = inject("reload");
-let roleList = reactive({
+let tagsList = reactive({
   list: [],
 });
 //分页
 const page = reactive({
-  pageSize: 7,
+  pageSize: 10,
   currentSize: 1,
   total: 0,
 });
@@ -27,9 +27,9 @@ const handleCurrentChange = (val: number) => {
 //获取角色列表方法
 const FindUserListByPage = (currentSize: number, pageSize: number) => {
   api
-    .get("role/FindRoleList?index=" + currentSize + "&size=" + pageSize)
+    .get("Tags/FindTagsListPage?index=" + currentSize + "&size=" + pageSize)
     .then((res: any) => {
-      roleList.list = res.data.data.records;
+      tagsList.list = res.data.data.records;
       page.total = res.data.data.total;
       page.currentSize = res.data.data.current;
       page.pageSize = res.data.data.size;
@@ -45,9 +45,9 @@ onMounted(() => {
 const ruleFormRef = ref<FormInstance>();
 const validateAccount = (rule: any, value: any, callback: any) => {
   if (value === "") {
-    callback(new Error("请输入用户名"));
+    callback(new Error("请输入标签名"));
   } else {
-    if (formAdd.name !== "") {
+    if (formAdd.tagName !== "") {
       if (!ruleFormRef.value) return;
       ruleFormRef.value.validateField("checkPass", () => null);
     }
@@ -63,22 +63,25 @@ const rules = reactive({
 var dialogVisibleUpdate = ref(false);
 //编辑处理
 const formUpdate = reactive({
-  id: 0,
-  name: "",
+  id: "",
+  tagName: "",
+  tagDescription: "",
 });
 const openUpdate = (row: any) => {
-  (formUpdate.id = row.id),
-    (formUpdate.name = row.name),
+  (formUpdate.tagName = row.tagName),
+    (formUpdate.tagDescription = row.tagDescription),
+    (formUpdate.id = row.id),
     (dialogVisibleUpdate.value = true);
 };
 const onUpdate = (row: any) => {
   axios
     .request({
       baseURL: "http://localhost:8090/",
-      url: "role/UpdateRole",
+      url: "Tags/UpdateTags",
       data: {
         id: formUpdate.id,
-        name: formUpdate.name,
+        tagName: formUpdate.tagName,
+        tagDescription: formUpdate.tagDescription,
       },
       method: "post",
       headers: {
@@ -87,7 +90,7 @@ const onUpdate = (row: any) => {
       },
     })
     .then((res: any) => {
-      roleList.list = res.data;
+      tagsList.list = res.data;
     });
   dialogVisibleUpdate.value = false;
   reload();
@@ -96,12 +99,24 @@ const onUpdate = (row: any) => {
     message: "保存成功！",
     type: "success",
   });
+  /*api.post("role/UpdateRole", JSON.stringify(userUpdate))
+  .then((res: any) => {
+    roleList.list = res.data;
+  });
+  dialogVisibleUpdate.value = false;
+  reload();
+  ElMessage({
+        showClose: true,
+        message: '保存成功！',
+        type: 'success',
+  })*/
 };
 //新增框
 var dialogVisibleAdd = ref(false);
 //新增处理
 const formAdd = reactive({
-  name: "",
+  tagName: "",
+  tagDescription: "",
 });
 const openAdd = () => {
   dialogVisibleAdd.value = true;
@@ -110,10 +125,11 @@ const onAdd = (row: any) => {
   axios
     .request({
       baseURL: "http://localhost:8090/",
-      url: "role/InsertRole",
+      url: "Tags/InsertTag",
       data: {
         id: 0,
-        name: formAdd.name,
+        tagName: formAdd.tagName,
+        tagDescription: formAdd.tagDescription,
       },
       method: "post",
       headers: {
@@ -122,7 +138,7 @@ const onAdd = (row: any) => {
       },
     })
     .then((res: any) => {
-      roleList.list = res.data;
+      tagsList.list = res.data;
       dialogVisibleAdd.value = false;
       reload();
       ElMessage({
@@ -131,6 +147,17 @@ const onAdd = (row: any) => {
         type: "success",
       });
     });
+  /*api.post("role/InsertRole", JSON.stringify(role))
+  .then((res: any) => {
+    roleList.list = res.data;
+    dialogVisibleAdd.value = false;
+    reload();
+    ElMessage({
+        showClose: true,
+        message: '新增成功！',
+        type: 'success',
+    })
+  });*/
 };
 //关闭弹出框
 const handleClose = (done: () => void) => {
@@ -144,7 +171,7 @@ const handleClose = (done: () => void) => {
 };
 //删除角色
 const onDelete = (row: any) => {
-  api.get("role/DeleteRole?id=" + row.id).then((res: any) => {
+  api.get("Tags/DeleteTags?id=" + row.id).then((res: any) => {
     console.log(res.data);
     reload();
     ElMessage({
@@ -173,24 +200,25 @@ const rowStyle = (arg) => {
 };
 //模糊查询
 const formInline = reactive({
-  name: "",
-  username: "",
+  tagName: "",
+  tagDescription: "",
   currentIndex: page.currentSize,
   pageSize: page.pageSize,
 });
 //筛选方法
 const onSubmit = () => {
-  api.post("role/FindRoleListByOthers", formInline).then((res: any) => {
-    roleList.list = res.data.records;
-    page.total = res.data.total;
-    page.currentSize = res.data.current;
-    page.pageSize = res.data.size;
+  api.post("Tags/FindTagsListByOthers", formInline).then((res: any) => {
+    tagsList.list = res.data.data.records;
+    page.total = res.data.data.total;
+    page.currentSize = res.data.data.current;
+    page.pageSize = res.data.data.size;
     console.log(res.data);
   });
 };
 //重置筛选表单
 const resetFormLine = () => {
-  formInline.name = "";
+  (formInline.tagDescription = ""),
+    FindUserListByPage(page.currentSize, page.pageSize);
 };
 </script>
 
@@ -198,8 +226,8 @@ const resetFormLine = () => {
   <el-card style="background-color: #153a40; margin-bottom: 5px">
     <div>
       <el-form :inline="true" :model="formInline" class="demo-form-inline">
-        <el-form-item label="角色名：">
-          <el-input v-model="formInline.name" placeholder="请输入昵称" />
+        <el-form-item label="关键字：">
+          <el-input v-model="formInline.tagDescription" placeholder="请输入关键字" />
         </el-form-item>
         <el-form-item>
           <el-button
@@ -224,7 +252,7 @@ const resetFormLine = () => {
             text
             @click="openAdd()"
             style="color: aqua"
-            >新增角色</el-button
+            >新增标签</el-button
           >
         </el-form-item>
       </el-form>
@@ -233,13 +261,14 @@ const resetFormLine = () => {
 
   <el-card style="background-color: #153a40">
     <el-table
-      :data="roleList.list"
+      :data="tagsList.list"
       style="width: 100%"
       :header-cell-style="headerStyle"
       :row-style="rowStyle"
     >
       <el-table-column prop="id" label="序号" />
-      <el-table-column prop="name" label="角色名字" />
+      <el-table-column prop="tagName" label="标签名" />
+      <el-table-column prop="tagDescription" label="标签描述" />
       <el-table-column label="操作">
         <template #default="scope">
           <el-button
@@ -269,7 +298,7 @@ const resetFormLine = () => {
   </el-card>
   <el-dialog
     v-model="dialogVisibleAdd"
-    title="新增角色"
+    title="新增标签"
     width="500px"
     :before-close="handleClose"
   >
@@ -277,15 +306,23 @@ const resetFormLine = () => {
       :inline="true"
       class="demo-form-inline"
       ref="ruleFormRef"
-      :model="formAdd"
+      :model="formUpdate"
       :rules="rules"
     >
-      <el-form-item label="角色名称：">
+      <el-form-item label="标签名称：">
         <el-input
-          v-model="formAdd.name"
+          v-model="formUpdate.tagName"
           type="text"
           autocomplete="off"
-          placeholder="请输入角色名称"
+          placeholder="请输入标签名称"
+        />
+      </el-form-item>
+      <el-form-item label="标签描述：">
+        <el-input
+          v-model="formUpdate.tagDescription"
+          type="text"
+          autocomplete="off"
+          placeholder="请输入标签描述"
         />
       </el-form-item>
     </el-form>
@@ -298,7 +335,7 @@ const resetFormLine = () => {
   </el-dialog>
   <el-dialog
     v-model="dialogVisibleUpdate"
-    title="编辑角色"
+    title="编辑标签"
     width="500px"
     :before-close="handleClose"
   >
@@ -309,12 +346,20 @@ const resetFormLine = () => {
       :model="formUpdate"
       :rules="rules"
     >
-      <el-form-item label="角色名称：">
+      <el-form-item label="标签名称：">
         <el-input
-          v-model="formUpdate.name"
+          v-model="formUpdate.tagName"
           type="text"
           autocomplete="off"
-          placeholder="请输入角色名称"
+          placeholder="请输入标签名称"
+        />
+      </el-form-item>
+      <el-form-item label="标签描述：">
+        <el-input
+          v-model="formUpdate.tagDescription"
+          type="text"
+          autocomplete="off"
+          placeholder="请输入标签描述"
         />
       </el-form-item>
     </el-form>
