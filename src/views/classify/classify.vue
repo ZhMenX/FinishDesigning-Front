@@ -244,7 +244,7 @@ const resetFormLine = () => {
             text
             @click="openAdd()"
             style="color: aqua"
-            >新增标签</el-button
+            >新增领域分类</el-button
           >
         </el-form-item>
       </el-form>

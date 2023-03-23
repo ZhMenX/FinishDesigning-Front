@@ -9,7 +9,7 @@ import { UploadFilled } from "@element-plus/icons-vue";
 //富文本编辑器
 import "@wangeditor/editor/dist/css/style.css"; // 引入 css
 import api from "../../axios/axios";
-import { SlateElement } from "@wangeditor/editor";
+import { IEditorConfig, SlateElement } from "@wangeditor/editor";
 import {
   onBeforeUnmount,
   ref,
@@ -105,6 +105,8 @@ const openImage = (row: any) => {
     "http://localhost:8090/upload?title=" + uploadFirstImage.title;
   dialogVisibleImage.value = true;
 };
+
+
 //编辑框
 var dialogVisibleUpdate = ref(false);
 //编辑处理
@@ -158,19 +160,19 @@ const onUpdate = (row: any) => {
     });
   dialogVisibleUpdate.value = false;
   reload();
-
-  /*api.post("article/UpdArticle", JSON.stringify(userUpdate))
-  .then((res: any) => {
-    articleList.list = res.data;
-  });
-  dialogVisibleUpdate.value = false;
-  reload();
-  ElMessage({
-        showClose: true,
-        message: '保存成功！',
-        type: 'success',
-  })*/
 };
+
+//查看详情
+var dialogVisibleDetail = ref(false)
+const openDetail = (row:any) =>{
+  (formUpdate.articleId = row.articleId),
+    (formUpdate.title = row.title),
+    (formUpdate.description = row.description),
+    (formUpdate.content = row.content),
+    (formUpdate.image = row.image),
+    (dialogVisibleDetail.value = true);
+}
+
 //新增框
 var dialogVisibleAdd = ref(false);
 //新增处理
@@ -323,6 +325,11 @@ onMounted(() => {
 });
 
 const toolbarConfig = {};
+const editorConfigDetail: Partial<IEditorConfig> = {   // TS 语法
+
+}
+editorConfigDetail.readOnly = true
+
 // 初始化 MENU_CONF 属性
 const editorConfig = {
   MENU_CONF: {},
@@ -398,15 +405,6 @@ var dialogVisible = ref(false);
             placeholder="请输入关键字"
           />
         </el-form-item>
-        <el-form-item label="文章领域：">
-          <el-input
-            v-model="formInline.classify_list"
-            placeholder="请输入相关领域"
-          />
-        </el-form-item>
-        <el-form-item label="标签：">
-          <el-input v-model="formInline.tag_list" placeholder="请输入标签" />
-        </el-form-item>
         <el-form-item>
           <el-button
             type="primary"
@@ -424,7 +422,8 @@ var dialogVisible = ref(false);
             @click="onSubmit"
             >筛选</el-button
           >
-          <el-button
+          <div style="float:right; position: relative;">
+            <el-button
             type="primary"
             size="large"
             text
@@ -432,6 +431,8 @@ var dialogVisible = ref(false);
             style="color: aqua"
             >新增文章</el-button
           >
+          </div>
+
         </el-form-item>
       </el-form>
     </div>
@@ -464,6 +465,15 @@ var dialogVisible = ref(false);
                     @click="openImage(scope.row)"
                     style="color: black"
                     >上传封面图</el-button
+                  >
+                </el-dropdown-item>
+                <el-dropdown-item>
+                  <el-button
+                    type="primary"
+                    text
+                    @click="openDetail(scope.row)"
+                    style="color: black"
+                    >查看详情</el-button
                   >
                 </el-dropdown-item>
                 <el-dropdown-item>
@@ -546,6 +556,7 @@ var dialogVisible = ref(false);
     v-model="dialogVisibleAdd"
     title="新增文章"
     width="auto"
+    fullscreen="true"
     :before-close="handleClose"
   >
     <el-form
@@ -601,6 +612,7 @@ var dialogVisible = ref(false);
     title="编辑用户"
     width="auto"
     :before-close="handleClose"
+    fullscreen="true"
   >
     <el-form
       :inline="true"
@@ -635,7 +647,7 @@ var dialogVisible = ref(false);
           mode="default"
         />
         <Editor
-          style="height: 350px; overflow-y: hidden; width: 1370px"
+          style="height: auto; overflow-y: hidden; width: 1370px"
           v-model="formUpdate.content"
           :defaultConfig="editorConfig"
           mode="default"
@@ -647,6 +659,42 @@ var dialogVisible = ref(false);
       <span class="dialog-footer">
         <el-button @click="dialogVisibleUpdate = false">取消</el-button>
         <el-button type="primary" @click="onUpdate"> 保存修改 </el-button>
+      </span>
+    </template>
+  </el-dialog>
+  <el-dialog
+    v-model="dialogVisibleDetail"
+    title="详情"
+    width="auto"
+    :before-close="handleClose"
+    fullscreen="true"
+  >
+    <el-form
+      :inline="true"
+      class="demo-form-inline"
+      ref="ruleFormRef"
+      :model="formUpdate"
+      :rules="rules"
+    >
+      <el-form-item>
+        <Toolbar
+          style="border-bottom: 1px solid #ccc;width:1500px"
+          :editor="editorRef"
+          :defaultConfig="toolbarConfig"
+          mode="default"
+        />
+        <Editor
+          style="height: auto; overflow-y: hidden; width: 1500px"
+          v-model="formUpdate.content"
+          :defaultConfig="editorConfigDetail"
+          mode="default"
+          @onCreated="handleCreated"
+        />
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="dialogVisibleDetail = false">返回</el-button>
       </span>
     </template>
   </el-dialog>
