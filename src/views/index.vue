@@ -79,7 +79,7 @@ const handleClose = (key: string, keyPath: string[]) => {
               </template>
               <el-menu-item index="/user">
                 <el-icon><User /></el-icon>
-                用户管理
+                后台用户管理
               </el-menu-item>
               <el-menu-item index="/role">
                 <el-icon><Service /></el-icon>
@@ -94,7 +94,7 @@ const handleClose = (key: string, keyPath: string[]) => {
             </el-menu-item-group>
             <el-menu-item index="/authority">
               <el-icon><Lock /></el-icon>
-              密码管理
+              微信用户管理
             </el-menu-item>
           </el-sub-menu>
           <el-sub-menu index="3">
@@ -107,7 +107,7 @@ const handleClose = (key: string, keyPath: string[]) => {
               <el-menu-item index="/authority"
                 ><el-icon><Tickets /></el-icon>话题发布审核</el-menu-item
               >
-              <el-menu-item index="/authority"
+              <el-menu-item index="/discuss"
                 ><el-icon><Document /></el-icon>话题列表</el-menu-item
               >
             </el-menu-item-group>
@@ -130,11 +130,11 @@ const handleClose = (key: string, keyPath: string[]) => {
           <el-menu-item index="3-4-1">item one</el-menu-item>
         </el-sub-menu>-->
           </el-sub-menu>
-          <el-menu-item index="/login">
+          <el-menu-item>
             <el-icon><setting /></el-icon>
             <template #title>GitHub</template>
           </el-menu-item>
-          <el-menu-item index="2">
+          <el-menu-item>
             <el-icon><MoreFilled /></el-icon>
             <template #title>待更新</template>
           </el-menu-item>
