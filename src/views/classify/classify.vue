@@ -76,7 +76,7 @@ const openUpdate = (row: any) => {
 const onUpdate = (row: any) => {
   axios
     .request({
-      baseURL: "http://localhost:8090/",
+      baseURL: "http://101.42.53.76:8090/",
       url: "Classify/UpdateClassify",
       data: {
         id: formUpdate.id,
@@ -124,7 +124,7 @@ const openAdd = () => {
 const onAdd = (row: any) => {
   axios
     .request({
-      baseURL: "http://localhost:8090/",
+      baseURL: "http://101.42.53.76:8090/",
       url: "Classify/InsertClassify",
       data: {
         id: 0,

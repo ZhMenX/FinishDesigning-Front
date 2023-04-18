@@ -3,7 +3,7 @@ import axios from 'axios'
 
 // 创建一个 axios 实例
 const initAxios = axios.create({
-	baseURL:'http://localhost:8090/',
+	baseURL:'http://101.42.53.76:8090/',
 	timeout: 60000, // 请求超时时间毫秒
 	withCredentials: true, // 异步请求携带cookie
 	headers: {

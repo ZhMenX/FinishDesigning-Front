@@ -116,7 +116,7 @@ const onUpdate = (row: any)  => {
   requestUpdate.name = formUpdate.name;
   requestUpdate.sex = formUpdate.sex;
   axios.request({
-    baseURL:"http://localhost:8090/",
+    baseURL:"http://101.42.53.76:8090/",
     url:"User/UpdateUser",
     data:requestUpdate,
     method:'post',
@@ -170,7 +170,7 @@ const onAdd = (row: any)  => {
   requestAdd.sex = formAdd.sex;
   requestAdd.password = formAdd.password;
   axios.request({
-    baseURL:"http://localhost:8090/",
+    baseURL:"http://101.42.53.76:8090/",
     url:"register",
     data:requestAdd,
     method:'post',
