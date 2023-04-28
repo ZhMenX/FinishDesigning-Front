@@ -30,6 +30,16 @@ const router = createRouter({
           component: () => import('../views/discuss/discussList.vue')
         },
         {
+          path: '/articleAudit',
+          name: 'articleAudit',
+          component: () => import('../views/article/articleAudit.vue')
+        },
+        {
+          path: '/discussAudit',
+          name: 'discussAudit',
+          component: () => import('../views/discuss/discussAudit.vue')
+        },
+        {
           path: '/role',
           name: 'role',
           component: () => import('../views/role/roleList.vue')
@@ -43,6 +53,16 @@ const router = createRouter({
           path: '/authority',
           name: 'authority',
           component: () => import('../views/authority/authorityList.vue')
+        },
+        {
+          path: '/wechatUser',
+          name: 'wechatUser',
+          component: () => import('../views/wechatUser/wechatUser.vue')
+        },
+        {
+          path: '/question',
+          name: 'question',
+          component: () => import('../views/questions/questions.vue')
         },
         {
           path: '/classify',

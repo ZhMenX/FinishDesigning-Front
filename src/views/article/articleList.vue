@@ -44,9 +44,10 @@ const handleCurrentChange = (val: number) => {
 const FindUserListByPage = (currentSize: number, pageSize: number) => {
   api
     .get(
-      "article/FindArticleListPage?index=" + currentSize + "&size=" + pageSize
+      "article/FindArticleList?index=" + currentSize + "&size=" + pageSize
     )
     .then((res: any) => {
+      loading.value = false
       articleList.list = res.data.data.records;
       page.total = res.data.data.total;
       page.currentSize = res.data.data.current;
@@ -221,17 +222,6 @@ const onAdd = (row: any) => {
         type: "success",
       });
     });
-  /*api.post("article/AddArticle", JSON.stringify(article))
-  .then((res: any) => {
-    articleList.list = res.data;
-    dialogVisibleAdd.value = false;
-    reload();
-    ElMessage({
-        showClose: true,
-        message: '新增成功！',
-        type: 'success',
-    })
-  });*/
 };
 //关闭弹出框
 const handleClose = (done: () => void) => {
@@ -358,23 +348,6 @@ const UploadFile = (file, insertFn) => {
         type: "error",
       });
     });
-  /*api.post("uploadArticleImage", imgData) //该上传图片接口，返回url
-  .then((res) => {
-      console.log(res);
-      console.log(res.data.data[0]);
-      // 插入后端返回的url
-      insertFn(res.data.data[0]); //res.data.data是url地址
-      ElMessage({
-        type: "success",
-        message: "上传成功"
-      })
-  })
-  .catch((error) => {
-      ElMessage({
-        message:"上传失败！",
-        type:"error"
-      })
-  });*/
 };
 editorConfig.MENU_CONF["uploadImage"] = {
   customUpload: UploadFile,
@@ -393,6 +366,7 @@ const handleCreated = (editor) => {
 };
 //上传封面
 var dialogVisible = ref(false);
+const loading = ref(true);
 </script>
 
 <template>
@@ -441,6 +415,7 @@ var dialogVisible = ref(false);
   <el-card style="background-color: #153a40">
     <el-table
       :data="articleList.list"
+      v-loading ="loading"
       style="width: 100%"
       :header-cell-style="headerStyle"
       :row-style="rowStyle"

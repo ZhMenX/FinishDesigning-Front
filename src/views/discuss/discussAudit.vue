@@ -45,22 +45,77 @@ const loading = ref(true);
 const FindUserListByPage = (currentSize: number, pageSize: number) => {
   api
     .get(
-      "/discuss/FindDiscussListPage?index=" + currentSize + "&size=" + pageSize
+      "/discuss/FindDiscussListAudit?index=" + currentSize + "&size=" + pageSize
     )
     .then((res: any) => {
-      loading.value = false
+      loading.value = false;
       discussList.list = res.data.data.records;
+      discussList.list.forEach((discuss) => {
+        const timestampInCreateTime = Math.floor(discuss.createTime / 1000);
+        const timeStr = timestampTime(timestampInCreateTime);
+        discuss.createTime = timeStr;
+        const timestampInUpdateTime = Math.floor(discuss.updateTime / 1000);
+        const timeStr1 = timestampTime(timestampInUpdateTime);
+        discuss.updateTime = timeStr1;
+      });
       page.total = res.data.data.total;
       page.currentSize = res.data.data.current;
       page.pageSize = res.data.data.size;
       console.log(res.data);
     });
 };
-
+//转化时间
+function timestampTime(timestamp) {
+  const dateObj = new Date(timestamp * 1000);
+  const year = dateObj.getFullYear();
+  const month = ("0" + (dateObj.getMonth() + 1)).slice(-2);
+  const day = ("0" + dateObj.getDate()).slice(-2);
+  const hours = ("0" + dateObj.getHours()).slice(-2);
+  const minutes = ("0" + dateObj.getMinutes()).slice(-2);
+  const seconds = ("0" + dateObj.getSeconds()).slice(-2);
+  return (
+    year + "-" + month + "-" + day + " " + hours + ":" + minutes + ":" + seconds
+  );
+}
 onMounted(() => {
   FindUserListByPage(page.currentSize, page.pageSize);
 });
-
+const OnAuditPassed = (row: any) => {
+  api
+    .get(
+      "discuss/UpdateAuditStatus?discussId=" +
+        row.discussId +
+        "&auditStatus=" +
+        "已通过"
+    )
+    .then((res: any) => {
+      console.log(res.data);
+      reload();
+      ElMessage({
+        showClose: true,
+        message: "状态更改为：已通过",
+        type: "success",
+      });
+    });
+};
+const OnAuditFail = (row: any) => {
+  api
+    .get(
+      "discuss/UpdateAuditStatus?discussId=" +
+        row.discussId +
+        "&auditStatus=" +
+        "未通过"
+    )
+    .then((res: any) => {
+      console.log(res.data);
+      reload();
+      ElMessage({
+        showClose: true,
+        message: "状态更改为：未通过",
+        type: "success",
+      });
+    });
+};
 //登录校验
 const ruleFormRef = ref<FormInstance>();
 const validateTitle = (rule: any, value: any, callback: any) => {
@@ -106,7 +161,6 @@ const openImage = (row: any) => {
     "http://localhost:8090/upload?title=" + uploadFirstImage.title;
   dialogVisibleImage.value = true;
 };
-
 
 //编辑框
 var dialogVisibleUpdate = ref(false);
@@ -160,14 +214,14 @@ const onUpdate = (row: any) => {
 };
 
 //查看详情
-var dialogVisibleDetail = ref(false)
-const openDetail = (row:any) =>{
+var dialogVisibleDetail = ref(false);
+const openDetail = (row: any) => {
   (formUpdate.discussId = row.discussId),
     (formUpdate.title = row.title),
     (formUpdate.content = row.content),
     (formUpdate.image = row.image),
     (dialogVisibleDetail.value = true);
-}
+};
 
 //新增框
 var dialogVisibleAdd = ref(false);
@@ -260,7 +314,6 @@ const formInline = reactive({
   discussId: "",
   title: "",
   content: "",
-
 });
 //筛选方法
 const onSubmit = () => {
@@ -269,7 +322,7 @@ const onSubmit = () => {
     pageSize: formInline.pageSize,
     discussId: formInline.discussId,
     title: formInline.content,
-    content: formInline.content
+    content: formInline.content,
   };
 
   api.post("/discuss/FindDiscussListByOthers", formData).then((res: any) => {
@@ -302,10 +355,10 @@ onMounted(() => {
 });
 
 const toolbarConfig = {};
-const editorConfigDetail: Partial<IEditorConfig> = {   // TS 语法
-
-}
-editorConfigDetail.readOnly = true
+const editorConfigDetail: Partial<IEditorConfig> = {
+  // TS 语法
+};
+editorConfigDetail.readOnly = true;
 
 // 初始化 MENU_CONF 属性
 const editorConfig = {
@@ -335,23 +388,6 @@ const UploadFile = (file, insertFn) => {
         type: "error",
       });
     });
-  /*api.post("uploaddiscussImage", imgData) //该上传图片接口，返回url
-  .then((res) => {
-      console.log(res);
-      console.log(res.data.data[0]);
-      // 插入后端返回的url
-      insertFn(res.data.data[0]); //res.data.data是url地址
-      ElMessage({
-        type: "success",
-        message: "上传成功"
-      })
-  })
-  .catch((error) => {
-      ElMessage({
-        message:"上传失败！",
-        type:"error"
-      })
-  });*/
 };
 editorConfig.MENU_CONF["uploadImage"] = {
   customUpload: UploadFile,
@@ -373,14 +409,11 @@ var dialogVisible = ref(false);
 </script>
 
 <template>
-  <el-card style="background-color: #153a40; margin-bottom: 5px">
+  <!--<el-card style="background-color: #153a40; margin-bottom: 5px">
     <div>
       <el-form :inline="true" :model="formInline" class="demo-form-inline">
         <el-form-item label="关键词：">
-          <el-input
-            v-model="formInline.content"
-            placeholder="请输入关键字"
-          />
+          <el-input v-model="formInline.content" placeholder="请输入关键字" />
         </el-form-item>
         <el-form-item>
           <el-button
@@ -399,34 +432,23 @@ var dialogVisible = ref(false);
             @click="onSubmit"
             >筛选</el-button
           >
-          <div style="float:right; position: relative;">
-            <el-button
-            type="primary"
-            size="large"
-            text
-            @click="openAdd()"
-            style="color: aqua"
-            >新增话题</el-button
-          >
-          </div>
-
         </el-form-item>
       </el-form>
     </div>
-  </el-card>
+  </el-card>-->
 
   <el-card style="background-color: #153a40">
     <el-table
       :data="discussList.list"
-      v-loading ="loading"
+      v-loading="loading"
       style="width: 100%"
       :header-cell-style="headerStyle"
       :row-style="rowStyle"
     >
-      <el-table-column prop="discussId" label="话题序号" sortable />
       <el-table-column prop="title" label="标题" />
-      <el-table-column prop="viewedTimes" label="浏览量" />
-      <el-table-column prop="replyNumber" label="回复量" />
+      <el-table-column prop="auditStatus" label="审核状态" width="150"/>
+      <el-table-column prop="createTime" label="发布时间" width="200"/>
+      <el-table-column prop="updateTime" label="审核时间" width="200"/>
       <el-table-column label="操作" width="100">
         <template #default="scope">
           <el-dropdown>
@@ -441,15 +463,6 @@ var dialogVisible = ref(false);
                   <el-button
                     type="primary"
                     text
-                    @click="openImage(scope.row)"
-                    style="color: black"
-                    >上传封面图</el-button
-                  >
-                </el-dropdown-item>
-                <el-dropdown-item>
-                  <el-button
-                    type="primary"
-                    text
                     @click="openDetail(scope.row)"
                     style="color: black"
                     >查看详情</el-button
@@ -459,36 +472,18 @@ var dialogVisible = ref(false);
                   <el-button
                     type="primary"
                     text
-                    @click="openUpdate(scope.row)"
-                    style="color: black"
-                    >编辑</el-button
+                    @click="OnAuditPassed(scope.row)"
+                    >通过</el-button
                   ></el-dropdown-item
                 >
                 <el-dropdown-item>
-                  <el-button type="danger" text @click="onDelete(scope.row)"
-                    >删除</el-button
+                  <el-button type="danger" text @click="OnAuditFail(scope.row)"
+                    >不通过</el-button
                   ></el-dropdown-item
                 >
               </el-dropdown-menu>
             </template>
           </el-dropdown>
-          <!--<el-button
-            type="primary"
-            text
-            @click="openImage(scope.row)"
-            style="color: aqua"
-            >上传封面图</el-button
-          >
-          <el-button
-            type="primary"
-            text
-            @click="openUpdate(scope.row)"
-            style="color: aqua"
-            >编辑</el-button
-          >
-          <el-button type="danger" text @click="onDelete(scope.row)"
-            >删除</el-button
-          >-->
         </template>
       </el-table-column>
     </el-table>
@@ -505,125 +500,6 @@ var dialogVisible = ref(false);
     </div>
   </el-card>
   <el-dialog
-    v-model="dialogVisibleImage"
-    title="封面上传"
-    width="50%"
-    height="auto"
-    :before-close="handleClose"
-  >
-    <el-upload class="upload-demo" drag :action="uploadFirstImageUrl" multiple>
-      <el-icon class="el-icon--upload"><upload-filled /></el-icon>
-      <div class="el-upload__text">
-        Drop file here or <em>click to upload</em>
-      </div>
-      <template #tip>
-        <div class="el-upload__tip">
-          jpg/png files with a size less than 500kb
-        </div>
-      </template>
-    </el-upload>
-    <template #footer>
-      <span class="dialog-footer">
-        <el-button @click="dialogVisibleImage = false">Cancel</el-button>
-        <el-button type="primary" @click="dialogVisibleImage = false">
-          上传封面
-        </el-button>
-      </span>
-    </template>
-  </el-dialog>
-  <el-dialog
-    v-model="dialogVisibleAdd"
-    title="新增话题"
-    width="auto"
-    fullscreen="true"
-    :before-close="handleClose"
-  >
-    <el-form
-      :inline="true"
-      class="demo-form-inline"
-      ref="ruleFormRef"
-      :model="formAdd"
-      :rules="rules"
-    >
-      <el-form-item label="标题：">
-        <el-input
-          v-model="formAdd.title"
-          type="text"
-          autocomplete="off"
-          placeholder="请输入标题"
-          style="width: 500px"
-        />
-      </el-form-item>
-      <el-form-item label="内容：">
-        <Toolbar
-          style="border-bottom: 1px solid #ccc"
-          :editor="editorRef"
-          :defaultConfig="toolbarConfig"
-          mode="default"
-        />
-        <Editor
-          style="height: 350px; overflow-y: hidden; width: 1370px"
-          v-model="formAdd.content"
-          :defaultConfig="editorConfig"
-          mode="default"
-          @onCreated="handleCreated"
-        />
-      </el-form-item>
-    </el-form>
-    <template #footer>
-      <span class="dialog-footer">
-        <el-button @click="dialogVisibleAdd = false">取消</el-button>
-        <el-button type="primary" @click="onAdd"> 新增 </el-button>
-      </span>
-    </template>
-  </el-dialog>
-  <el-dialog
-    v-model="dialogVisibleUpdate"
-    title="编辑话题"
-    width="auto"
-    :before-close="handleClose"
-    fullscreen="true"
-  >
-    <el-form
-      :inline="true"
-      class="demo-form-inline"
-      ref="ruleFormRef"
-      :model="formUpdate"
-      :rules="rules"
-    >
-      <el-form-item label="标题：">
-        <el-input
-          v-model="formUpdate.title"
-          type="text"
-          autocomplete="off"
-          placeholder="请输入标题"
-          style="width: 500px"
-        />
-      </el-form-item>
-      <el-form-item label="内容：">
-        <Toolbar
-          style="border-bottom: 1px solid #ccc"
-          :editor="editorRef"
-          :defaultConfig="toolbarConfig"
-          mode="default"
-        />
-        <Editor
-          style="height: auto; overflow-y: hidden; width: 1370px"
-          v-model="formUpdate.content"
-          :defaultConfig="editorConfig"
-          mode="default"
-          @onCreated="handleCreated"
-        />
-      </el-form-item>
-    </el-form>
-    <template #footer>
-      <span class="dialog-footer">
-        <el-button @click="dialogVisibleUpdate = false">取消</el-button>
-        <el-button type="primary" @click="onUpdate"> 保存修改 </el-button>
-      </span>
-    </template>
-  </el-dialog>
-  <el-dialog
     v-model="dialogVisibleDetail"
     title="详情"
     width="auto"
@@ -639,7 +515,7 @@ var dialogVisible = ref(false);
     >
       <el-form-item>
         <Toolbar
-          style="border-bottom: 1px solid #ccc;width:1500px"
+          style="border-bottom: 1px solid #ccc; width: 1500px"
           :editor="editorRef"
           :defaultConfig="toolbarConfig"
           mode="default"

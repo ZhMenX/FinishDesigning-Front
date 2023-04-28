@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { ref, inject, reactive } from "vue";
+import router from "../router";
 //引入界面刷新
 const reload: any = inject("reload");
 const activeIndex = ref("1");
@@ -19,6 +20,15 @@ const handleOpen = (key: string, keyPath: string[]) => {
 const handleClose = (key: string, keyPath: string[]) => {
   console.log(key, keyPath);
 };
+//跳转GitHub
+const toGitHub = () => {
+  window.open('https://github.com/ZhMenX');
+};
+
+const toLogin = () =>{
+  router.push("/login")
+}
+
 </script>
 
 <template>
@@ -33,21 +43,17 @@ const handleClose = (key: string, keyPath: string[]) => {
           background-color="#112229"
           text-color="#27fffb"
           @select="handleSelect"
+          :unique-opened="true"
         >
-          <el-menu-item index="0" @click="CloseCollapse">关闭</el-menu-item>
-          <el-menu-item index="1" @click="OpenCollapse">展开</el-menu-item>
+          <!--<el-menu-item index="0" @click="CloseCollapse">hu</el-menu-item>
+          <el-menu-item index="1" @click="OpenCollapse">展开</el-menu-item>-->
           <div class="flex-grow" />
           <el-menu-item index="2" @click="OpenCollapse">
             <h1 style="text-align: center; color: #199e9e">小程序后台管理</h1>
           </el-menu-item>
           <div class="flex-grow_right" />
-          <el-menu-item @click="reload()">欢迎， SuperAdmin !</el-menu-item>
-          <el-sub-menu>
-            <template #title>设置</template>
-            <el-menu-item index="4-1">退出登录</el-menu-item>
-            <el-menu-item index="4-2">item two</el-menu-item>
-            <el-menu-item index="4-3">item three</el-menu-item>
-          </el-sub-menu>
+          <el-menu-item @click="reload()">刷新</el-menu-item>
+          <el-menu-item @click="toLogin()">退出登录</el-menu-item>
         </el-menu>
       </el-col>
     </el-row>
@@ -86,13 +92,8 @@ const handleClose = (key: string, keyPath: string[]) => {
                 角色管理
               </el-menu-item>
             </el-menu-item-group>
-            <el-menu-item-group title="账号管理">
-              <el-menu-item index="/authority">
-                <el-icon><Lock /></el-icon>
-                后台权限
-              </el-menu-item>
-            </el-menu-item-group>
-            <el-menu-item index="/authority">
+            <el-menu-item-group title="账号管理"> </el-menu-item-group>
+            <el-menu-item index="/wechatUser">
               <el-icon><Lock /></el-icon>
               微信用户管理
             </el-menu-item>
@@ -104,15 +105,15 @@ const handleClose = (key: string, keyPath: string[]) => {
             </template>
             <el-menu-item-group>
               <template #title><span>话题</span></template>
-              <el-menu-item index="/authority"
+              <el-menu-item index="/discussAudit"
                 ><el-icon><Tickets /></el-icon>话题发布审核</el-menu-item
               >
               <el-menu-item index="/discuss"
                 ><el-icon><Document /></el-icon>话题列表</el-menu-item
               >
             </el-menu-item-group>
-            <el-menu-item-group title="文章博客">
-              <el-menu-item index="/authority"
+            <el-menu-item-group title="文章">
+              <el-menu-item index="/articleAudit"
                 ><el-icon><Postcard /></el-icon>文章发布审核</el-menu-item
               >
               <el-menu-item index="/article"
@@ -125,18 +126,24 @@ const handleClose = (key: string, keyPath: string[]) => {
                 ><el-icon><WindPower /></el-icon>文章领域分类</el-menu-item
               >
             </el-menu-item-group>
-            <!--<el-sub-menu index="3-4">
-          <template #title><span>item four</span></template>
-          <el-menu-item index="3-4-1">item one</el-menu-item>
-        </el-sub-menu>-->
+            <el-menu-item-group>
+              <template #title><span>题目</span></template>
+              <el-menu-item index="/question"
+                ><el-icon><Shop /></el-icon>题目管理</el-menu-item
+              >
+            </el-menu-item-group>
           </el-sub-menu>
           <el-menu-item>
             <el-icon><setting /></el-icon>
-            <template #title>GitHub</template>
+            <template #title>
+              <span @click="toGitHub()">MyGitHub</span>
+            </template>
           </el-menu-item>
           <el-menu-item>
             <el-icon><MoreFilled /></el-icon>
-            <template #title>待更新</template>
+            <template #title>
+              <span >待续</span>
+            </template>
           </el-menu-item>
         </el-menu>
       </el-col>

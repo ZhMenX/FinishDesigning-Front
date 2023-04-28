@@ -22,7 +22,7 @@ import { Editor, Toolbar } from "@wangeditor/editor-for-vue";
 const store = mainStore();
 //引入界面刷新
 const reload: any = inject("reload");
-let discussList = reactive({
+let articleList = reactive({
   list: [],
 });
 //分页
@@ -40,16 +40,23 @@ const handleCurrentChange = (val: number) => {
   FindUserListByPage(page.currentSize, page.pageSize);
   console.log(`current page: ${val}`);
 };
-const loading = ref(true);
-//获取话题列表方法
+//获取文章列表方法
 const FindUserListByPage = (currentSize: number, pageSize: number) => {
   api
     .get(
-      "/discuss/FindDiscussListPage?index=" + currentSize + "&size=" + pageSize
+      "article/FindArticleListAudit?index=" + currentSize + "&size=" + pageSize
     )
     .then((res: any) => {
       loading.value = false
-      discussList.list = res.data.data.records;
+      articleList.list = res.data.data.records;
+      articleList.list.forEach((article) => {
+        const timestampInSeconds = Math.floor(article.createTime / 1000);
+        const timeStr = timestampTime(timestampInSeconds);
+        article.createTime = timeStr;
+        const timestampInUpdateTime = Math.floor(article.updateTime / 1000);
+        const timeStr1 = timestampTime(timestampInUpdateTime);
+        article.updateTime = timeStr1;
+      });
       page.total = res.data.data.total;
       page.currentSize = res.data.data.current;
       page.pageSize = res.data.data.size;
@@ -87,6 +94,7 @@ const validateContent = (rule: any, value: any, callback: any) => {
 
 const rules = reactive({
   title: [{ validator: validateTitle, trigger: "blur" }],
+  description: [{ validator: validateDescription, trigger: "blur" }],
   content: [{ validator: validateContent, trigger: "blur" }],
 });
 const resetForm = (formEl: FormInstance | undefined) => {
@@ -112,32 +120,36 @@ const openImage = (row: any) => {
 var dialogVisibleUpdate = ref(false);
 //编辑处理
 const formUpdate = reactive({
-  discussId: "",
+  articleId: "",
   title: "",
+  description: "",
   content: "",
   image: "",
 });
 const openUpdate = (row: any) => {
-  (formUpdate.discussId = row.discussId),
+  (formUpdate.articleId = row.articleId),
     (formUpdate.title = row.title),
+    (formUpdate.description = row.description),
     (formUpdate.content = row.content),
     (formUpdate.image = row.image),
     (dialogVisibleUpdate.value = true);
 };
 const onUpdate = (row: any) => {
   let userUpdate = {
-    discussId: formUpdate.discussId,
+    articleId: formUpdate.articleId,
     title: formUpdate.title,
+    description: formUpdate.description,
     content: formUpdate.content,
     createUserId: store.getUserId,
   };
   axios
     .request({
       baseURL: "http://localhost:8090/",
-      url: "discuss/UpdDiscuss",
+      url: "article/UpdArticle",
       data: {
-        discussId: formUpdate.discussId,
+        articleId: formUpdate.articleId,
         title: formUpdate.title,
+        description: formUpdate.description,
         content: formUpdate.content,
         createUserId: store.getUserId,
       },
@@ -148,7 +160,7 @@ const onUpdate = (row: any) => {
       },
     })
     .then((res: any) => {
-      discussList.list = res.data;
+      articleList.list = res.data;
       ElMessage({
         showClose: true,
         message: "保存成功！",
@@ -162,8 +174,9 @@ const onUpdate = (row: any) => {
 //查看详情
 var dialogVisibleDetail = ref(false)
 const openDetail = (row:any) =>{
-  (formUpdate.discussId = row.discussId),
+  (formUpdate.articleId = row.articleId),
     (formUpdate.title = row.title),
+    (formUpdate.description = row.description),
     (formUpdate.content = row.content),
     (formUpdate.image = row.image),
     (dialogVisibleDetail.value = true);
@@ -173,8 +186,9 @@ const openDetail = (row:any) =>{
 var dialogVisibleAdd = ref(false);
 //新增处理
 const formAdd = reactive({
-  discussId: "",
+  articleId: "",
   title: "",
+  description: "",
   content: "",
   image: "",
 });
@@ -182,19 +196,21 @@ const openAdd = () => {
   dialogVisibleAdd.value = true;
 };
 const onAdd = (row: any) => {
-  let discuss = {
-    discussId: formAdd.discussId,
+  let article = {
+    articleId: formAdd.articleId,
     title: formAdd.title,
+    description: formAdd.description,
     content: formAdd.content,
     createUserId: store.getUserId,
   };
   axios
     .request({
       baseURL: "http://localhost:8090/",
-      url: "discuss/AddDiscuss",
+      url: "article/AddArticle",
       data: {
-        discussId: formAdd.discussId,
+        articleId: formAdd.articleId,
         title: formAdd.title,
+        description: formAdd.description,
         content: formAdd.content,
         createUserId: store.getUserId,
       },
@@ -205,7 +221,7 @@ const onAdd = (row: any) => {
       },
     })
     .then((res: any) => {
-      discussList.list = res.data;
+      articleList.list = res.data;
       dialogVisibleAdd.value = false;
       reload();
       ElMessage({
@@ -227,7 +243,7 @@ const handleClose = (done: () => void) => {
 };
 //删除用户
 const onDelete = (row: any) => {
-  api.get("/discuss/DelDiscuss?id=" + row.discussId).then((res: any) => {
+  api.get("article/DelArticle?id=" + row.articleId).then((res: any) => {
     console.log(res.data);
     reload();
     ElMessage({
@@ -257,23 +273,26 @@ const rowStyle = (arg) => {
 const formInline = reactive({
   currentIndex: page.currentSize,
   pageSize: page.pageSize,
-  discussId: "",
+  articleId: "",
   title: "",
-  content: "",
-
+  description: "",
+  classify_list: "",
+  tag_list: "",
 });
 //筛选方法
 const onSubmit = () => {
   let formData = {
     currentIndex: formInline.currentIndex,
     pageSize: formInline.pageSize,
-    discussId: formInline.discussId,
-    title: formInline.content,
-    content: formInline.content
+    articleId: formInline.articleId,
+    title: formInline.description,
+    description: formInline.description,
+    classify_list: formInline.classify_list,
+    tag_list: formInline.tag_list,
   };
 
-  api.post("/discuss/FindDiscussListByOthers", formData).then((res: any) => {
-    discussList.list = res.data.data.records;
+  api.post("article/FindArticleListByOthers", formData).then((res: any) => {
+    articleList.list = res.data.data.records;
     page.total = res.data.data.total;
     page.currentSize = res.data.data.current;
     page.pageSize = res.data.data.size;
@@ -283,8 +302,10 @@ const onSubmit = () => {
 //重置筛选表单
 const resetFormLine = () => {
   (formInline.title = ""),
-    (formInline.content = ""),
-    (formInline.discussId = ""),
+    (formInline.description = ""),
+    (formInline.classify_list = ""),
+    (formInline.tag_list = ""),
+    (formInline.articleId = ""),
     onSubmit();
 };
 
@@ -318,7 +339,7 @@ const UploadFile = (file, insertFn) => {
   imgData.append("file", file);
   //调用上传图片接口，上传图片
   api
-    .post("uploaddiscussImage", imgData)
+    .post("uploadArticleImage", imgData)
     .then((res) => {
       console.log(res);
       console.log(res.data.data[0]);
@@ -335,23 +356,6 @@ const UploadFile = (file, insertFn) => {
         type: "error",
       });
     });
-  /*api.post("uploaddiscussImage", imgData) //该上传图片接口，返回url
-  .then((res) => {
-      console.log(res);
-      console.log(res.data.data[0]);
-      // 插入后端返回的url
-      insertFn(res.data.data[0]); //res.data.data是url地址
-      ElMessage({
-        type: "success",
-        message: "上传成功"
-      })
-  })
-  .catch((error) => {
-      ElMessage({
-        message:"上传失败！",
-        type:"error"
-      })
-  });*/
 };
 editorConfig.MENU_CONF["uploadImage"] = {
   customUpload: UploadFile,
@@ -368,17 +372,53 @@ onBeforeUnmount(() => {
 const handleCreated = (editor) => {
   editorRef.value = editor; // 记录 editor 实例，重要！
 };
+const OnAuditPassed = (row:any)=>{
+    api.get("article/UpdateAuditStatus?articleId=" + row.articleId+"&auditStatus="+"已通过").then((res: any) => {
+    console.log(res.data);
+    reload();
+    ElMessage({
+      showClose: true,
+      message: "状态更改为：已通过",
+      type: "success",
+    });
+  });
+}
+const OnAuditFail = (row:any)=>{
+    api.get("article/UpdateAuditStatus?articleId=" + row.articleId+"&auditStatus="+"未通过").then((res: any) => {
+    console.log(res.data);
+    reload();
+    ElMessage({
+      showClose: true,
+      message: "状态更改为：未通过",
+      type: "success",
+    });
+  });
+}
+//转化时间
+function timestampTime(timestamp) {
+  const dateObj = new Date(timestamp * 1000);
+  const year = dateObj.getFullYear();
+  const month = ("0" + (dateObj.getMonth() + 1)).slice(-2);
+  const day = ("0" + dateObj.getDate()).slice(-2);
+  const hours = ("0" + dateObj.getHours()).slice(-2);
+  const minutes = ("0" + dateObj.getMinutes()).slice(-2);
+  const seconds = ("0" + dateObj.getSeconds()).slice(-2);
+  return (
+    year + "-" + month + "-" + day + " " + hours + ":" + minutes + ":" + seconds
+  );
+}
 //上传封面
 var dialogVisible = ref(false);
+const loading = ref(true);
 </script>
 
 <template>
-  <el-card style="background-color: #153a40; margin-bottom: 5px">
+  <!--<el-card style="background-color: #153a40; margin-bottom: 5px">
     <div>
       <el-form :inline="true" :model="formInline" class="demo-form-inline">
         <el-form-item label="关键词：">
           <el-input
-            v-model="formInline.content"
+            v-model="formInline.description"
             placeholder="请输入关键字"
           />
         </el-form-item>
@@ -399,34 +439,24 @@ var dialogVisible = ref(false);
             @click="onSubmit"
             >筛选</el-button
           >
-          <div style="float:right; position: relative;">
-            <el-button
-            type="primary"
-            size="large"
-            text
-            @click="openAdd()"
-            style="color: aqua"
-            >新增话题</el-button
-          >
-          </div>
-
         </el-form-item>
       </el-form>
     </div>
-  </el-card>
+  </el-card>-->
 
   <el-card style="background-color: #153a40">
     <el-table
-      :data="discussList.list"
+      :data="articleList.list"
       v-loading ="loading"
       style="width: 100%"
       :header-cell-style="headerStyle"
       :row-style="rowStyle"
     >
-      <el-table-column prop="discussId" label="话题序号" sortable />
       <el-table-column prop="title" label="标题" />
-      <el-table-column prop="viewedTimes" label="浏览量" />
-      <el-table-column prop="replyNumber" label="回复量" />
+      <el-table-column prop="description" label="描述" width="420" />
+      <el-table-column prop="auditStatus" label="审核状态" />
+      <el-table-column prop="createTime" label="发布时间" />
+      <el-table-column prop="updateTime" label="审核时间"/>
       <el-table-column label="操作" width="100">
         <template #default="scope">
           <el-dropdown>
@@ -441,54 +471,24 @@ var dialogVisible = ref(false);
                   <el-button
                     type="primary"
                     text
-                    @click="openImage(scope.row)"
-                    style="color: black"
-                    >上传封面图</el-button
-                  >
-                </el-dropdown-item>
-                <el-dropdown-item>
-                  <el-button
-                    type="primary"
-                    text
                     @click="openDetail(scope.row)"
                     style="color: black"
                     >查看详情</el-button
                   >
                 </el-dropdown-item>
                 <el-dropdown-item>
-                  <el-button
-                    type="primary"
-                    text
-                    @click="openUpdate(scope.row)"
-                    style="color: black"
-                    >编辑</el-button
+                  <el-button type="primary" text @click="OnAuditPassed(scope.row)"
+                    >通过</el-button
                   ></el-dropdown-item
                 >
                 <el-dropdown-item>
-                  <el-button type="danger" text @click="onDelete(scope.row)"
-                    >删除</el-button
+                  <el-button type="danger" text @click="OnAuditFail(scope.row)"
+                    >不通过</el-button
                   ></el-dropdown-item
                 >
               </el-dropdown-menu>
             </template>
           </el-dropdown>
-          <!--<el-button
-            type="primary"
-            text
-            @click="openImage(scope.row)"
-            style="color: aqua"
-            >上传封面图</el-button
-          >
-          <el-button
-            type="primary"
-            text
-            @click="openUpdate(scope.row)"
-            style="color: aqua"
-            >编辑</el-button
-          >
-          <el-button type="danger" text @click="onDelete(scope.row)"
-            >删除</el-button
-          >-->
         </template>
       </el-table-column>
     </el-table>
@@ -505,35 +505,8 @@ var dialogVisible = ref(false);
     </div>
   </el-card>
   <el-dialog
-    v-model="dialogVisibleImage"
-    title="封面上传"
-    width="50%"
-    height="auto"
-    :before-close="handleClose"
-  >
-    <el-upload class="upload-demo" drag :action="uploadFirstImageUrl" multiple>
-      <el-icon class="el-icon--upload"><upload-filled /></el-icon>
-      <div class="el-upload__text">
-        Drop file here or <em>click to upload</em>
-      </div>
-      <template #tip>
-        <div class="el-upload__tip">
-          jpg/png files with a size less than 500kb
-        </div>
-      </template>
-    </el-upload>
-    <template #footer>
-      <span class="dialog-footer">
-        <el-button @click="dialogVisibleImage = false">Cancel</el-button>
-        <el-button type="primary" @click="dialogVisibleImage = false">
-          上传封面
-        </el-button>
-      </span>
-    </template>
-  </el-dialog>
-  <el-dialog
     v-model="dialogVisibleAdd"
-    title="新增话题"
+    title="新增文章"
     width="auto"
     fullscreen="true"
     :before-close="handleClose"
@@ -552,6 +525,15 @@ var dialogVisible = ref(false);
           autocomplete="off"
           placeholder="请输入标题"
           style="width: 500px"
+        />
+      </el-form-item>
+      <el-form-item label="描述：">
+        <textarea
+          v-model="formAdd.description"
+          type="text"
+          autocomplete="off"
+          placeholder="请输入描述"
+          style="width: 1300px"
         />
       </el-form-item>
       <el-form-item label="内容：">
@@ -574,52 +556,6 @@ var dialogVisible = ref(false);
       <span class="dialog-footer">
         <el-button @click="dialogVisibleAdd = false">取消</el-button>
         <el-button type="primary" @click="onAdd"> 新增 </el-button>
-      </span>
-    </template>
-  </el-dialog>
-  <el-dialog
-    v-model="dialogVisibleUpdate"
-    title="编辑话题"
-    width="auto"
-    :before-close="handleClose"
-    fullscreen="true"
-  >
-    <el-form
-      :inline="true"
-      class="demo-form-inline"
-      ref="ruleFormRef"
-      :model="formUpdate"
-      :rules="rules"
-    >
-      <el-form-item label="标题：">
-        <el-input
-          v-model="formUpdate.title"
-          type="text"
-          autocomplete="off"
-          placeholder="请输入标题"
-          style="width: 500px"
-        />
-      </el-form-item>
-      <el-form-item label="内容：">
-        <Toolbar
-          style="border-bottom: 1px solid #ccc"
-          :editor="editorRef"
-          :defaultConfig="toolbarConfig"
-          mode="default"
-        />
-        <Editor
-          style="height: auto; overflow-y: hidden; width: 1370px"
-          v-model="formUpdate.content"
-          :defaultConfig="editorConfig"
-          mode="default"
-          @onCreated="handleCreated"
-        />
-      </el-form-item>
-    </el-form>
-    <template #footer>
-      <span class="dialog-footer">
-        <el-button @click="dialogVisibleUpdate = false">取消</el-button>
-        <el-button type="primary" @click="onUpdate"> 保存修改 </el-button>
       </span>
     </template>
   </el-dialog>
