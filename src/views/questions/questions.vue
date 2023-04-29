@@ -110,7 +110,7 @@ const uploadFirstImage = reactive({
 const openImage = (row: any) => {
   uploadFirstImage.title = row.title;
   uploadFirstImageUrl.value =
-    "http://localhost:8090/upload?title=" + uploadFirstImage.title;
+    "http://www.atzmx.online:8090/upload?title=" + uploadFirstImage.title;
   dialogVisibleImage.value = true;
 };
 //新增框

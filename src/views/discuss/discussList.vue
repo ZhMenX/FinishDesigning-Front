@@ -103,7 +103,7 @@ const uploadFirstImage = reactive({
 const openImage = (row: any) => {
   uploadFirstImage.title = row.title;
   uploadFirstImageUrl.value =
-    "http://localhost:8090/upload?title=" + uploadFirstImage.title;
+    "http://www.atzmx.online:8090/upload?title=" + uploadFirstImage.title;
   dialogVisibleImage.value = true;
 };
 
@@ -133,7 +133,7 @@ const onUpdate = (row: any) => {
   };
   axios
     .request({
-      baseURL: "http://localhost:8090/",
+      baseURL: "http://www.atzmx.online:8090/",
       url: "discuss/UpdDiscuss",
       data: {
         discussId: formUpdate.discussId,
@@ -190,7 +190,7 @@ const onAdd = (row: any) => {
   };
   axios
     .request({
-      baseURL: "http://localhost:8090/",
+      baseURL: "http://www.atzmx.online:8090/",
       url: "discuss/AddDiscuss",
       data: {
         discussId: formAdd.discussId,
