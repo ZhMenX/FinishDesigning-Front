@@ -306,12 +306,12 @@ const resetFormLine = () => {
       :inline="true"
       class="demo-form-inline"
       ref="ruleFormRef"
-      :model="formUpdate"
+      :model="formAdd"
       :rules="rules"
     >
       <el-form-item label="标签名称：">
         <el-input
-          v-model="formUpdate.tagName"
+          v-model="formAdd.tagName"
           type="text"
           autocomplete="off"
           placeholder="请输入标签名称"
@@ -319,7 +319,7 @@ const resetFormLine = () => {
       </el-form-item>
       <el-form-item label="标签描述：">
         <el-input
-          v-model="formUpdate.tagDescription"
+          v-model="formAdd.tagDescription"
           type="text"
           autocomplete="off"
           placeholder="请输入标签描述"

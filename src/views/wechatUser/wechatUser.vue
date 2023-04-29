@@ -49,7 +49,7 @@ const headerStyle = ({ row, column, rowIndex, columnIndex }: never) => {
 };
 //获取头像链接
 const getImageUrl = (userImage: string) => {
-  return `http://www.atzmx.online/static/userImage/${userImage}`;
+  return `${userImage}`;
 };
 //修改表格行列样式
 const rowStyle = (arg) => {

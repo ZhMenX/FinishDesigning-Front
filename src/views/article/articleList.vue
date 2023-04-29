@@ -103,7 +103,7 @@ const uploadFirstImage = reactive({
 const openImage = (row: any) => {
   uploadFirstImage.title = row.title;
   uploadFirstImageUrl.value =
-    "http://www.atzmx.online:8090/upload?title=" + uploadFirstImage.title;
+    "http://www.atzmx.online:8090/uploadAriticlePicture?title=" + uploadFirstImage.title;
   dialogVisibleImage.value = true;
 };
 
@@ -331,7 +331,7 @@ const UploadFile = (file, insertFn) => {
   imgData.append("file", file);
   //调用上传图片接口，上传图片
   api
-    .post("uploadArticleImage", imgData)
+    .post("uploadPicture", imgData)
     .then((res) => {
       console.log(res);
       console.log(res.data.data[0]);
