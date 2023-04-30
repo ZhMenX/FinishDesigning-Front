@@ -103,7 +103,7 @@ const uploadFirstImage = reactive({
 const openImage = (row: any) => {
   uploadFirstImage.title = row.title;
   uploadFirstImageUrl.value =
-    "http://localhost:8090/uploadAriticlePicture?title=" + uploadFirstImage.title;
+    "http://www.atzmx.online:8090/uploadAriticlePicture?title=" + uploadFirstImage.title;
   dialogVisibleImage.value = true;
 };
 
@@ -331,7 +331,7 @@ const UploadFile = (file, insertFn) => {
   imgData.append("file", file);
   axios
     .request({
-      baseURL: "http://localhost:8090/",
+      baseURL: "http://www.atzmx.online:8090/",
       url: "uploadPicture",
       data: imgData,
       method: "post",
