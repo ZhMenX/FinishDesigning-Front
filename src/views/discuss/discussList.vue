@@ -441,15 +441,6 @@ var dialogVisible = ref(false);
                   <el-button
                     type="primary"
                     text
-                    @click="openImage(scope.row)"
-                    style="color: black"
-                    >上传封面图</el-button
-                  >
-                </el-dropdown-item>
-                <el-dropdown-item>
-                  <el-button
-                    type="primary"
-                    text
                     @click="openDetail(scope.row)"
                     style="color: black"
                     >查看详情</el-button

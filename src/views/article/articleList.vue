@@ -103,7 +103,7 @@ const uploadFirstImage = reactive({
 const openImage = (row: any) => {
   uploadFirstImage.title = row.title;
   uploadFirstImageUrl.value =
-    "http://www.atzmx.online:8090/uploadAriticlePicture?title=" + uploadFirstImage.title;
+    "http://localhost:8090/uploadAriticlePicture?title=" + uploadFirstImage.title;
   dialogVisibleImage.value = true;
 };
 
@@ -233,7 +233,7 @@ const handleClose = (done: () => void) => {
       // catch error
     });
 };
-//删除用户
+//删除文章
 const onDelete = (row: any) => {
   api.get("article/DelArticle?id=" + row.articleId).then((res: any) => {
     console.log(res.data);
@@ -329,17 +329,22 @@ const editorConfig = {
 const UploadFile = (file, insertFn) => {
   let imgData = new FormData();
   imgData.append("file", file);
-  //调用上传图片接口，上传图片
-  api
-    .post("uploadPicture", imgData)
-    .then((res) => {
-      console.log(res);
-      console.log(res.data.data[0]);
+  axios
+    .request({
+      baseURL: "http://localhost:8090/",
+      url: "uploadPicture",
+      data: imgData,
+      method: "post",
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    .then((res: any) => {
       // 插入后端返回的url
-      insertFn(res.data.data[0]); //res.data.data是url地址
+      console.log(res.data.data);
+      insertFn(res.data.data); //res.data.data是url地址
       ElMessage({
+        showClose: true,
+        message: "上传成功!",
         type: "success",
-        message: "上传成功",
       });
     })
     .catch((error) => {
@@ -348,6 +353,20 @@ const UploadFile = (file, insertFn) => {
         type: "error",
       });
     });
+  //调用上传图片接口，上传图片
+  /*api
+    .post("/uploadPicture", imgData)
+    .then((res) => {
+      console.log(res);
+      console.log(res.data.data);
+      // 插入后端返回的url
+      insertFn(res.data.data); //res.data.data是url地址
+      ElMessage({
+        type: "success",
+        message: "上传成功",
+      });
+    })*/
+
 };
 editorConfig.MENU_CONF["uploadImage"] = {
   customUpload: UploadFile,
@@ -468,23 +487,6 @@ const loading = ref(true);
               </el-dropdown-menu>
             </template>
           </el-dropdown>
-          <!--<el-button
-            type="primary"
-            text
-            @click="openImage(scope.row)"
-            style="color: aqua"
-            >上传封面图</el-button
-          >
-          <el-button
-            type="primary"
-            text
-            @click="openUpdate(scope.row)"
-            style="color: aqua"
-            >编辑</el-button
-          >
-          <el-button type="danger" text @click="onDelete(scope.row)"
-            >删除</el-button
-          >-->
         </template>
       </el-table-column>
     </el-table>
@@ -584,7 +586,7 @@ const loading = ref(true);
   </el-dialog>
   <el-dialog
     v-model="dialogVisibleUpdate"
-    title="编辑用户"
+    title="编辑文章"
     width="auto"
     :before-close="handleClose"
     fullscreen="true"
